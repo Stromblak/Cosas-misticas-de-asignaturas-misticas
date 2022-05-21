@@ -1,6 +1,5 @@
 #include <bits/stdc++.h>
 using namespace std;
-typedef unsigned uint;
 
 /*
 	El archivo .fna se puede colocar como input
@@ -8,17 +7,17 @@ typedef unsigned uint;
 	cmd /c ".\a.exe < GCF_000820745.1_Polynesia_massiliensis_MS3_genomic.fna"
 	no se si conoces alguna mejor
 
-	max uint = 4294967295, primo anterior = 4294967291
+	max int = 4294967295, primo anterior = 4294967291
 	ante anterior = 4294967279
 */ 
 
 class Hash{
 	private:
 		string genoma;
-		uint p, a, b, m, k;
+		int p, a, b, m, k;
 		int h(string kmer);
 		int kmers();
-		uint kmerToUint(string kmer);
+		int kmerToInt(string kmer);
 
 	public:
 		Hash(string gen);
@@ -29,17 +28,16 @@ Hash::Hash(string gen){
 	p = 4294967291;
 	a = rand()%p, b = rand()%p, k = 15;
 	genoma = gen;
-
 	m = kmers();
 }
 
 int Hash::h(string kmer){
-	uint knum = kmerToUint(kmer);
+	int knum = kmerToInt(kmer);
 	return ( (a*knum + b)%p )%m;
 }
 
-uint Hash::kmerToUint(string kmer){
-	uint knum = 0;
+int Hash::kmerToInt(string kmer){
+	int knum = 0;
 
 	for(int i=0; i<kmer.size(); i++){
 		int base;
@@ -50,12 +48,14 @@ uint Hash::kmerToUint(string kmer){
 
 		knum += base << i*2;
 	}
+	cout << kmer << " " << knum << endl;
 	return knum;
 }
 
 int Hash::kmers(){
 	set<int> st;
-	for(int i=0; i<genoma.size() - (k-1); i++) st.insert( kmerToUint( genoma.substr(i, k) ) );
+	for(int i=0; i<genoma.size() - (k-1); i++) 
+		st.insert( kmerToInt( genoma.substr(i, k) ) );
 	return st.size();
 }
 
