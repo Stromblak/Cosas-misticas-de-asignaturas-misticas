@@ -9,6 +9,8 @@ typedef unsigned int uint;
 	no se si conoces alguna mejor
 
 	parece que cuando el p es muy alto deja de funcionar el hashing 
+
+	usar el genoma como input no tengo idea si termina o no el programa
 */ 
 
 class HashPerfecto{
@@ -43,11 +45,13 @@ HashPerfecto::HashPerfecto(string gen){
 	for(int i=0; i<genoma.size()-(k-1); i++){
 		int knum = kmerToInt( genoma.substr(i, k) );
 		setKmers.insert(knum);
-		multisetKmers.insert(knum);	// esto lo uso para contar cuantos kmers de un tipo hay, lo mas probable es que se pueda hacer mejor
+		multisetKmers.insert(knum);
 	}
 	m = setKmers.size();
 	
 	crearTabla();
+	multisetKmers.clear();
+	setKmers.clear();
 }
 
 int HashPerfecto::kmerToInt(string kmer){
