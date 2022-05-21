@@ -8,7 +8,7 @@ typedef unsigned uint;
 	cmd /c ".\a.exe < GCF_000820745.1_Polynesia_massiliensis_MS3_genomic.fna"
 	no se si conoces alguna mejor
 
-	max int = 4294967295, primo anterior = 4294967291
+	max uint = 4294967295, primo anterior = 4294967291
 	ante anterior = 4294967279
 */ 
 
