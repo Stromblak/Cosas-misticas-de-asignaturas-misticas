@@ -9,9 +9,6 @@ typedef unsigned int uint;
 	no se si conoces alguna mejor
 
 	parece que cuando el p es muy alto deja de funcionar el hashing 
-
-
-
 */ 
 
 class HashPerfecto{
@@ -19,7 +16,6 @@ class HashPerfecto{
 		string genoma;
 		set<int> setKmers;
 		multiset<int> multisetKmers;
-
 		vector<vector<int>> tabla;
 		int p, k, rep4, rep2;
 		int a, b, m, ai, bi, mi;
