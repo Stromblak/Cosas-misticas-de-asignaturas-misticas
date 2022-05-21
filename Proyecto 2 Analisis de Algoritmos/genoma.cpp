@@ -25,7 +25,7 @@ class Hash{
 
 Hash::Hash(string gen){
 	srand( time(NULL) );
-	p = 4294967291;
+	p = 2147483629;
 	a = rand()%p, b = rand()%p, k = 15;
 	genoma = gen;
 	m = kmers();
