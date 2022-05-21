@@ -10,7 +10,7 @@ typedef unsigned int uint;
 
 	parece que cuando el p es muy alto deja de funcionar el hashing 
 
-	usar el genoma como input no tengo idea si termina o no el programa
+	usar el genoma como input hace que se demore bastante, estimo unos 40 min, de paso ocupa 800mb de ram
 */ 
 
 class HashPerfecto{
@@ -37,7 +37,7 @@ HashPerfecto::HashPerfecto(string gen){
 	srand( time(NULL) );
 	rand();
 	genoma = gen;
-	p = 100003;
+	p = 7595479;
 	k = 15;
 	rep4 = 1;
 	rep2 = 1;
@@ -45,7 +45,7 @@ HashPerfecto::HashPerfecto(string gen){
 	for(int i=0; i<genoma.size()-(k-1); i++){
 		int knum = kmerToInt( genoma.substr(i, k) );
 		setKmers.insert(knum);
-		multisetKmers.insert(knum);	// lo uso para contar, seguro se puede hacer mejor
+		multisetKmers.insert(knum);		// lo uso para contar cuantos kmers de un tipo hay, seguro se puede mejorar
 	}
 	m = setKmers.size();
 	
@@ -97,8 +97,10 @@ void HashPerfecto::crearTabla(){
 	}
 
 	for(int i=0; i<m; i++){
+		cout << "Operaciones restantes: " << m-i << endl;
 		int col = tablaAux[i].size();
 		while(col){
+
 			ai = random()%p;
 			bi = random()%p;
 			mi = col*col;
@@ -107,7 +109,7 @@ void HashPerfecto::crearTabla(){
 			int flag = 0;
 			for(int knum: tablaAux[i]){
 				if( tabla[i][ 3+hi(knum) ] ) flag = 1;
-				else tabla[i][ 3+hi(knum) ] = multisetKmers.count(knum);
+				else tabla[i][ 3+hi(knum) ] = multisetKmers.count(knum);;
 			}
 
 			if(!flag){
