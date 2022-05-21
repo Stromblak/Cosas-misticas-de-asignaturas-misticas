@@ -54,22 +54,9 @@ uint Hash::kmerToUint(string kmer){
 }
 
 int Hash::kmers(){
-	priority_queue<int> pq;
-	for(int i=0; i<genoma.size() - (k-1); i++) pq.push( kmerToUint( genoma.substr(i, k) ) );
-
-	int kmers = 1, aux = pq.top();
-	pq.pop();
-
-	while(!pq.empty()){
-		if(aux == pq.top()) pq.pop();
-		else{
-			aux = pq.top();
-			pq.pop();
-			kmers++;
-		}
-	}
-	return kmers;
-	//	que tan trucho seria usar un set para contar los kmers distintos?
+	set<int> st;
+	for(int i=0; i<genoma.size() - (k-1); i++) st.insert( kmerToUint( genoma.substr(i, k) ) );
+	return st.size();
 }
 
 int main(){
