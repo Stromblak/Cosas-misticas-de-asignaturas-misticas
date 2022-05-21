@@ -7,8 +7,8 @@ using namespace std;
 	cmd /c ".\a.exe < GCF_000820745.1_Polynesia_massiliensis_MS3_genomic.fna"
 	no se si conoces alguna mejor
 
-	max int = 4294967295, primo anterior = 4294967291
-	ante anterior = 4294967279
+	INT_MAX = 2147483647, primo anterior = 2147483629
+	ante anterior = 2147483587
 */ 
 
 class Hash{
