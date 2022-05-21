@@ -47,7 +47,7 @@ HashPerfecto::HashPerfecto(string gen){
 	for(int i=0; i<genoma.size()-(k-1); i++){
 		int knum = kmerToInt( genoma.substr(i, k) );
 		setKmers.insert(knum);
-		multisetKmers.insert(knum);
+		multisetKmers.insert(knum);	// esto lo uso para contar cuantos kmers de un tipo hay, lo mas probable es que se pueda hacer mejor
 	}
 	m = setKmers.size();
 	
