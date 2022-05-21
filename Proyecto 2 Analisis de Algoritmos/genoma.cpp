@@ -1,5 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
+typedef unsigned int uint;
 
 /*
 	El archivo .fna se puede colocar como input
@@ -7,37 +8,54 @@ using namespace std;
 	cmd /c ".\a.exe < GCF_000820745.1_Polynesia_massiliensis_MS3_genomic.fna"
 	no se si conoces alguna mejor
 
-	INT_MAX = 2147483647, primo anterior = 2147483629
-	ante anterior = 2147483587
+	parece que cuando el p es muy alto deja de funcionar el hashing 
+
+
+
 */ 
 
-class Hash{
+class HashPerfecto{
 	private:
 		string genoma;
-		int p, a, b, m, k;
-		int h(string kmer);
-		int kmers();
+		set<int> setKmers;
+		multiset<int> multisetKmers;
+
+		vector<vector<int>> tabla;
+		int p, k, rep4, rep2;
+		int a, b, m, ai, bi, mi;
 		int kmerToInt(string kmer);
+		int h(int knum);
+		int hi(int knum);
+		int random();
+		void crearTabla();
 
 	public:
-		Hash(string gen);
+		HashPerfecto(string gen);
+		int search(string kmer);
+		void repeticiones();
 };
 
-Hash::Hash(string gen){
+HashPerfecto::HashPerfecto(string gen){
 	srand( time(NULL) );
-	p = 2147483629;
-	a = rand()%p, b = rand()%p, k = 15;
+	rand();
 	genoma = gen;
-	m = kmers();
+	p = 100003;
+	k = 15;
+	rep4 = 1;
+	rep2 = 1;
+
+	for(int i=0; i<genoma.size()-(k-1); i++){
+		int knum = kmerToInt( genoma.substr(i, k) );
+		setKmers.insert(knum);
+		multisetKmers.insert(knum);
+	}
+	m = setKmers.size();
+	
+	crearTabla();
 }
 
-int Hash::h(string kmer){
-	int knum = kmerToInt(kmer);
-	return ( (a*knum + b)%p )%m;
-}
-
-int Hash::kmerToInt(string kmer){
-	int knum = 0;
+int HashPerfecto::kmerToInt(string kmer){
+	uint knum = 0;
 
 	for(int i=0; i<kmer.size(); i++){
 		int base;
@@ -48,15 +66,92 @@ int Hash::kmerToInt(string kmer){
 
 		knum += base << i*2;
 	}
-	cout << kmer << " " << knum << endl;
 	return knum;
 }
 
-int Hash::kmers(){
-	set<int> st;
-	for(int i=0; i<genoma.size() - (k-1); i++) 
-		st.insert( kmerToInt( genoma.substr(i, k) ) );
-	return st.size();
+int HashPerfecto::random(){
+	return (rand() + rand()<<15);		//	rand tiene de maximo 32k
+}
+
+int HashPerfecto::h(int knum){
+	return ( (uint)(a*knum + b)%p )%m;
+}
+
+int HashPerfecto::hi(int knum){
+	return ( (uint)(ai*knum + bi)%p )%mi;
+}
+
+void HashPerfecto::crearTabla(){
+	vector<vector<int>> tablaAux(m);
+	tabla = vector<vector<int>>(m);
+	
+	while(true){
+		int sum = 0;
+		a = random()%p;
+		b = random()%p;	
+		for(int knum: setKmers) tablaAux[h(knum)].push_back(knum);
+		for(auto a: tablaAux) sum += a.size()*a.size();
+		
+		if(sum < 4*m) break;
+		else rep4++;
+	}
+
+	for(int i=0; i<m; i++){
+		int col = tablaAux[i].size();
+		while(col){
+			ai = random()%p;
+			bi = random()%p;
+			mi = col*col;
+			tabla[i] = vector<int>(3 + mi);
+
+			int flag = 0;
+			for(int knum: tablaAux[i]){
+				if( tabla[i][ 3+hi(knum) ] ) flag = 1;
+				else tabla[i][ 3+hi(knum) ] = multisetKmers.count(knum);
+			}
+
+			if(!flag){
+				tabla[i][0] = mi;
+				tabla[i][1] = ai;
+				tabla[i][2] = bi;
+				break;
+			}
+		}  
+	}
+}
+
+int HashPerfecto::search(string kmer){
+	int knum = kmerToInt(kmer);
+	int pos = h(knum);
+
+	if(tabla[pos].empty()) return 0;
+
+	mi = tabla[pos][0];
+	ai = tabla[pos][1];
+	bi = tabla[pos][2];
+
+	return tabla[pos][3 + hi(knum)];
+}
+
+void HashPerfecto::repeticiones(){
+	int ac = a, bc = b;
+	while(true){
+		int sum = 0;
+		a = random()%p, b = random()%p;	
+		int tablaCol[m] = {0};
+
+		for(int i: setKmers) tablaCol[ h(i) ]++;
+		for(int i: tablaCol) sum += i*i;
+
+		if(sum < 2*m){
+			a = ac;
+			b = bc;
+			break;
+		}
+		else rep2++;
+	}
+	cout << "Repeticiones 4n: " << rep4 << endl;
+	cout << "Repeticiones 2n: " << rep2 << endl;
 }
 
 int main(){
@@ -69,11 +164,13 @@ int main(){
 		if(saux == "sequence") flag = 0;
 	}
 
-	Hash h = Hash(genoma);
+	HashPerfecto h = HashPerfecto(genoma);
 
 
+	cout << h.search("GGGGGGGGGGGGGGG") << endl;
 
 
+	h.repeticiones();
 
 
 
