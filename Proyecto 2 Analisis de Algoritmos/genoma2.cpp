@@ -1,7 +1,11 @@
-#include <bits/stdc++.h>
-using namespace std;
-typedef unsigned int uint;
+#include <iostream>
+#include <vector>
+#include <map>
+#include <chrono>
 
+using namespace std;
+using namespace chrono;
+typedef unsigned int uint;
 
 /*
 	El archivo .fna se puede colocar como input
@@ -11,9 +15,10 @@ typedef unsigned int uint;
 
 	parece que cuando el p es muy alto deja de funcionar el hashing 
 
-	que tan legal es usar un mapa pa hacer otro hash? xD
+	si se busca un kmer que no existe es posible que no devuelva 0, 
+	supongo que es naturaleza del hash y no algun bug xD
 
-	descubri que el cout y printf consume mucho tiempo, de un minuto sin ningun cout a tal vez media hora con el
+	me salen las repeticiones de busqueda a y b, casi siempre en 1, ni idea si esta bien
 */ 
 
 class HashPerfecto{
@@ -21,18 +26,19 @@ class HashPerfecto{
 		string genoma;
 		map<int, int> mapkmers;
 		vector<vector<int>> tabla;
-		int p, k, rep4, rep2;
+		int p, k, rep4, rep2, pc;
 		int a, b, m, ai, bi, mi;
-		int kmerToInt(string kmer);
 		int h(int knum);
 		int hi(int knum);
-		int random();
+		int kmerToInt(string kmer);
+		void procesarkmers();
 		void crearTabla();
+		void porcentaje(int i, int j);
+		void tabla2n();
 
 	public:
 		HashPerfecto(string *gen);
 		int search(string kmer);
-		void repeticiones();
 };
 
 HashPerfecto::HashPerfecto(string *gen){
@@ -43,23 +49,22 @@ HashPerfecto::HashPerfecto(string *gen){
 	k = 15;
 	rep4 = 1;
 	rep2 = 1;
+	pc = 10;
 
-
-	cout << "Procesando k-mers" << endl;	//	15 segundos
-	for(int i=0; i<genoma.size()-(k-1); i++) mapkmers[ kmerToInt( genoma.substr(i, k) ) ]++;
-
-
-	m = mapkmers.size();
-
-	cout << "Creando tabla" << endl;	// 23 segundos
-
-	auto start = chrono::high_resolution_clock::now();
+	procesarkmers();
 	crearTabla();
-	auto finish = chrono::high_resolution_clock::now();
-	cout << "Segundos: " << chrono::duration_cast<chrono::nanoseconds> (finish - start).count()/1000000000.0 << endl;
+	mapkmers.clear();
+	
+	cout << "Repeticiones 4n: " << rep4 << endl;
+	cout << "Repeticiones 2n: " << rep2 << endl;
+}
 
-	cout << "Tabla creada" << endl;
+int HashPerfecto::h(int knum){
+	return ( (uint)(a*knum + b)%p )%m;
+}
 
+int HashPerfecto::hi(int knum){
+	return ( (uint)(ai*knum + bi)%p )%mi;
 }
 
 int HashPerfecto::kmerToInt(string kmer){
@@ -73,39 +78,45 @@ int HashPerfecto::kmerToInt(string kmer){
 	return knum;
 }
 
-int HashPerfecto::random(){
-	return (rand() + rand()<<15);		//	rand tiene de maximo 32k
-}
+void HashPerfecto::procesarkmers(){
+	cout << "Procesando k-mers" << endl;
+	auto start = high_resolution_clock::now();
 
-int HashPerfecto::h(int knum){
-	return ( (uint)(a*knum + b)%p )%m;
-}
+	for(int i=0; i<genoma.size()-(k-1); i++){
+		porcentaje(i, genoma.size()-(k-1));
+		mapkmers[ kmerToInt( genoma.substr(i, k) ) ]++;
+	}
+	m = mapkmers.size();
 
-int HashPerfecto::hi(int knum){
-	return ( (uint)(ai*knum + bi)%p )%mi;
+	cout << "Tiempo requerido: " << duration_cast<seconds> (high_resolution_clock::now() - start).count() << "s" << endl << endl;;
 }
 
 void HashPerfecto::crearTabla(){
+	auto start = chrono::high_resolution_clock::now();
+
 	vector<vector<int>> tablaAux(m);
 	tabla = vector<vector<int>>(m);
-	
+
+	cout << "Creando tabla de primer nivel" << endl;
 	while(true){
 		int sum = 0;
-		a = random()%p;
-		b = random()%p;	
+		a = (rand() + rand()<<15)%p;
+		b = (rand() + rand()<<15)%p;	
 		for(auto kmer: mapkmers) tablaAux[ h(kmer.first) ].push_back(kmer.first);
 		for(auto a: tablaAux) sum += a.size()*a.size();
 		if(sum < 4*m) break;
 		else rep4++;
 	}
 
+	cout << "Creando tabla de segundo nivel" << endl;
 	for(int i=0; i<m; i++){
+		porcentaje(i, m);
 		int col = tablaAux[i].size(), flag = 0;
 		mi = col*col;
 
 		while(col){
-			ai = random()%p;
-			bi = random()%p;
+			ai = (rand() + rand()<<15)%p;
+			bi = (rand() + rand()<<15)%p;
 			tabla[i] = vector<int>(3 + mi);
 
 			for(int knum: tablaAux[i]){
@@ -123,6 +134,38 @@ void HashPerfecto::crearTabla(){
 			}else flag = 0;
 		}  
 	}
+
+	cout << "Tiempo requerido: ";
+	cout << duration_cast<seconds> (high_resolution_clock::now() - start).count() << "s" << endl << endl;
+}
+
+void HashPerfecto::porcentaje(int i, int j){
+	if((100.0*i)/j >= pc){
+		cout << "[]";
+		pc += 10;
+	}
+	if(i == j-1){
+		cout << "[]" << endl;
+		pc = 10;
+	}
+}
+
+void HashPerfecto::tabla2n(){
+	vector<vector<int>> tablaAux(m);
+	uint ac = a, bc = b;
+
+	while(true){
+		int sum = 0;
+		a = (rand() + rand()<<15)%p;
+		b = (rand() + rand()<<15)%p;
+		for(auto kmer: mapkmers) tablaAux[ h(kmer.first) ].push_back(kmer.first);
+		for(auto a: tablaAux) sum += a.size()*a.size();
+		if(sum < 2*m){
+			a = ac;
+			b = bc;
+			break;
+		}else rep2++;
+	}
 }
 
 int HashPerfecto::search(string kmer){
@@ -136,27 +179,6 @@ int HashPerfecto::search(string kmer){
 	bi = tabla[pos][2];
 
 	return tabla[pos][3 + hi(knum)];
-}
-
-void HashPerfecto::repeticiones(){
-	vector<vector<int>> tablaAux(m);
-	int ac = a, bc = b;
-
-	while(true){
-		int sum = 0;
-		a = random()%p;
-		b = random()%p;	
-		for(auto kmer: mapkmers) tablaAux[ h(kmer.first) ].push_back(kmer.first);
-		for(auto a: tablaAux) sum += a.size()*a.size();
-		if(sum < 2*m){
-			a = ac;
-			b = bc;
-			break;
-		}else rep2++;
-	}
-
-	cout << "Repeticiones 4n: " << rep4 << endl;
-	cout << "Repeticiones 2n: " << rep2 << endl;
 }
 
 int main(){
@@ -175,16 +197,9 @@ int main(){
 
 	cout << h.search("GGGGGGGGGGGGGGG") << endl;
 
-
-	h.repeticiones();
-
-
 	cout << "Fin main()" << endl;
 	return 0;
 }
-
-
-
 
 	/*	
 	procesar k-mers
