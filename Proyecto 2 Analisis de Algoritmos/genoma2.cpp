@@ -2,6 +2,7 @@
 using namespace std;
 typedef unsigned int uint;
 
+
 /*
 	El archivo .fna se puede colocar como input
 	por alguna razon en powershell no pesca el '<', encontre esta solucion
@@ -12,7 +13,7 @@ typedef unsigned int uint;
 
 	que tan legal es usar un mapa pa hacer otro hash? xD
 
-	descubri que el cout o printf consume mucho tiempo, de un min sin ningun cout a tal vez media hora con el
+	descubri que el cout o printf consume mucho tiempo, de un minuto sin ningun cout a tal vez media hora con el
 */ 
 
 class HashPerfecto{
@@ -47,8 +48,10 @@ HashPerfecto::HashPerfecto(string *gen){
 	for(int i=0; i<genoma.size()-(k-1); i++) mapkmers[ kmerToInt( genoma.substr(i, k) ) ]++;
 	m = mapkmers.size();
 
-	cout << "Creando Tabla" << endl;
+	cout << "Creando tabla" << endl;
 	crearTabla();
+	cout << "Tabla creada" << endl;
+
 }
 
 int HashPerfecto::kmerToInt(string kmer){
@@ -93,12 +96,9 @@ void HashPerfecto::crearTabla(){
 	}
 
 	for(int i=0; i<m; i++){
-		//cout << "Operaciones restantes: " << m-i << endl;
-		//printf("Operaciones restantes: %d\n", m-i);
-
-
 		int col = tablaAux[i].size(), flag = 0;
 		mi = col*col;
+
 		while(col){
 			ai = random()%p;
 			bi = random()%p;
@@ -135,30 +135,30 @@ int HashPerfecto::search(string kmer){
 }
 
 void HashPerfecto::repeticiones(){
+	vector<vector<int>> tablaAux(m);
 	int ac = a, bc = b;
+
 	while(true){
 		int sum = 0;
-		a = random()%p, b = random()%p;	
-		int tablaCol[m] = {0};
-
-		for(auto kmer: mapkmers) tablaCol[ h(kmer.first) ]++;
-		for(int i: tablaCol) sum += i*i;
-
+		a = random()%p;
+		b = random()%p;	
+		for(auto kmer: mapkmers) tablaAux[ h(kmer.first) ].push_back(kmer.first);
+		for(auto a: tablaAux) sum += a.size()*a.size();
 		if(sum < 2*m){
 			a = ac;
 			b = bc;
 			break;
-		}
-		else rep2++;
+		}else rep2++;
 	}
+
 	cout << "Repeticiones 4n: " << rep4 << endl;
 	cout << "Repeticiones 2n: " << rep2 << endl;
 }
 
 int main(){
 	string genoma, saux;
-
 	int flag = 0;
+
 	cout << "Leyendo genoma" << endl;
 	while(cin >> saux && !saux.empty()){
 		if(saux[0] == '>') flag = 1;
@@ -175,9 +175,7 @@ int main(){
 	h.repeticiones();
 
 
-
-
-	cout << "fin" << endl;
+	cout << "Fin main()" << endl;
 	return 0;
 }
 
