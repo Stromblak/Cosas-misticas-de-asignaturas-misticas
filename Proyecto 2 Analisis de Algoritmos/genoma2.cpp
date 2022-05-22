@@ -13,7 +13,7 @@ typedef unsigned int uint;
 
 	que tan legal es usar un mapa pa hacer otro hash? xD
 
-	descubri que el cout o printf consume mucho tiempo, de un minuto sin ningun cout a tal vez media hora con el
+	descubri que el cout y printf consume mucho tiempo, de un minuto sin ningun cout a tal vez media hora con el
 */ 
 
 class HashPerfecto{
@@ -44,27 +44,31 @@ HashPerfecto::HashPerfecto(string *gen){
 	rep4 = 1;
 	rep2 = 1;
 
-	cout << "Procesando k-mers" << endl;
+
+	cout << "Procesando k-mers" << endl;	//	15 segundos
 	for(int i=0; i<genoma.size()-(k-1); i++) mapkmers[ kmerToInt( genoma.substr(i, k) ) ]++;
+
+
 	m = mapkmers.size();
 
-	cout << "Creando tabla" << endl;
+	cout << "Creando tabla" << endl;	// 23 segundos
+
+	auto start = chrono::high_resolution_clock::now();
 	crearTabla();
+	auto finish = chrono::high_resolution_clock::now();
+	cout << "Segundos: " << chrono::duration_cast<chrono::nanoseconds> (finish - start).count()/1000000000.0 << endl;
+
 	cout << "Tabla creada" << endl;
 
 }
 
 int HashPerfecto::kmerToInt(string kmer){
-	uint knum = 0;
-
-	for(int i=0; i<kmer.size(); i++){
-		int base;
-		if(kmer[i] == 'A') base = 0;
-		else if(kmer[i] == 'C') base = 1;
-		else if(kmer[i] == 'T') base = 2;
-		else if(kmer[i] == 'G') base = 3;
-
-		knum += base << i*2;
+	int knum = 0;
+	for(int i=0; i<k; i++){
+		if(kmer[i] == 'A') knum += 0 << i*2;
+		else if(kmer[i] == 'C') knum += 1 << i*2;
+		else if(kmer[i] == 'T') knum += 2 << i*2;
+		else if(kmer[i] == 'G') knum += 3 << i*2;
 	}
 	return knum;
 }
@@ -180,3 +184,23 @@ int main(){
 }
 
 
+
+
+	/*	
+	procesar k-mers
+	esta opcion me ahorra 3.5 segundos, pero es mas bastante mas larga
+	
+	string kmer = genoma.substr(0, k);
+	mapkmers[ kmerToInt( genoma.substr(0, k) ) ]++;
+	int knum = kmerToInt(kmer);
+
+	for(int i=1; i<genoma.size()-(k-1); i++){
+		knum = knum >> 2;
+		if(genoma[i+k-1] == 'A') knum += 0 << 28;
+		else if(genoma[i+k-1] == 'C') knum += 1 << 28;
+		else if(genoma[i+k-1] == 'T') knum += 2 << 28;
+		else if(genoma[i+k-1] == 'G') knum += 3 << 28;
+		mapkmers[knum]++;
+	}
+	
+	*/
