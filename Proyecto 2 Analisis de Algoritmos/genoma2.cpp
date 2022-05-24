@@ -2,17 +2,13 @@
 #include <vector>
 #include <map>
 #include <chrono>
+#include <fstream>  
 
 using namespace std;
 using namespace chrono;
 typedef unsigned int uint;
 
 /*
-	El archivo .fna se puede colocar como input
-	por alguna razon en powershell no pesca el '<', encontre esta solucion
-	cmd /c ".\a.exe < GCF_000820745.1_Polynesia_massiliensis_MS3_genomic.fna"
-	no se si conoces alguna mejor
-
 	parece que cuando el p es muy alto deja de funcionar el hashing 
 
 	si se busca un kmer que no existe es posible que no devuelva 0, 
@@ -54,6 +50,8 @@ HashPerfecto::HashPerfecto(string *gen){
 	procesarkmers();
 	crearTabla();
 	mapkmers.clear();
+
+	tabla2n();
 	
 	cout << "Repeticiones 4n: " << rep4 << endl;
 	cout << "Repeticiones 2n: " << rep2 << endl;
@@ -169,6 +167,7 @@ void HashPerfecto::tabla2n(){
 }
 
 int HashPerfecto::search(string kmer){
+	if(kmer.size() != k) return -1;
 	int knum = kmerToInt(kmer);
 	int pos = h(knum);
 
@@ -182,40 +181,37 @@ int HashPerfecto::search(string kmer){
 }
 
 int main(){
-	string genoma, saux;
-	int flag = 0;
+	string nombre;
+	cout << "1: GCF_000820745.1_Polynesia_massiliensis_MS3_genomic.fna" << endl;
+	cout << "2: t.txt" << endl;
+	cout << "Ingresar numero o nombre del archivo: ";
+	cin >> nombre;
 
-	cout << "Leyendo genoma" << endl;
-	while(cin >> saux && !saux.empty()){
-		if(saux[0] == '>') flag = 1;
-		if(!flag) genoma += saux;
-		if(saux == "sequence") flag = 0;
+	if(nombre == "1") nombre =  "GCF_000820745.1_Polynesia_massiliensis_MS3_genomic.fna";
+	if(nombre == "2") nombre =  "t.txt";
+
+	ifstream archivo(nombre);
+	string genoma;
+	int copiar = 1;
+	while(true){
+		string data;
+		archivo >> data;
+		if(data.empty()) break;
+
+		if(data[0] == '>') copiar = 0;
+		if(copiar) genoma += data;
+		if(data == "sequence") copiar = 1;
 	}
-
+	
 	HashPerfecto h = HashPerfecto(&genoma);
 
-
-	cout << h.search("GGGGGGGGGGGGGGG") << endl;
+	string kmer;
+	cout << "Ingresar 15-mer a buscar, 0 para salir" << endl;
+	while(kmer != "0"){
+		cin >> kmer;
+		cout << "Cantidad: " << h.search(kmer) << endl;
+	}
 
 	cout << "Fin main()" << endl;
 	return 0;
 }
-
-	/*	
-	procesar k-mers
-	esta opcion me ahorra 3.5 segundos, pero es mas bastante mas larga
-	
-	string kmer = genoma.substr(0, k);
-	mapkmers[ kmerToInt( genoma.substr(0, k) ) ]++;
-	int knum = kmerToInt(kmer);
-
-	for(int i=1; i<genoma.size()-(k-1); i++){
-		knum = knum >> 2;
-		if(genoma[i+k-1] == 'A') knum += 0 << 28;
-		else if(genoma[i+k-1] == 'C') knum += 1 << 28;
-		else if(genoma[i+k-1] == 'T') knum += 2 << 28;
-		else if(genoma[i+k-1] == 'G') knum += 3 << 28;
-		mapkmers[knum]++;
-	}
-	
-	*/
