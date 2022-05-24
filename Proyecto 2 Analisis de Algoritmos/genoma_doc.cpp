@@ -246,6 +246,7 @@ void HashPerfecto::tabla2n()
  */
 int HashPerfecto::search(string kmer)
 {
+	if(kmer.size() != k) return -1;
 	int knum = kmerToInt(kmer); // x
 	int pos = h(knum);			// h(x)
 
@@ -261,23 +262,37 @@ int HashPerfecto::search(string kmer)
 
 int main()
 {
-	string genoma, saux;
-	int flag = 0;
+	string nombre;
+	cout << "1: GCF_000820745.1_Polynesia_massiliensis_MS3_genomic.fna" << endl;
+	cout << "2: t.txt" << endl;
+	cout << "Ingresar numero o nombre del archivo: ";
+	cin >> nombre;
 
-	cout << "Leyendo genoma" << endl;
-	while (cin >> saux && !saux.empty())
-	{
-		if (saux[0] == '>')
-			flag = 1;
-		if (!flag)
-			genoma += saux;
-		if (saux == "sequence")
-			flag = 0;
+	if(nombre == "1") nombre =  "GCF_000820745.1_Polynesia_massiliensis_MS3_genomic.fna";
+	if(nombre == "2") nombre =  "t.txt";
+
+	ifstream archivo(nombre);
+	string genoma;
+	int copiar = 1;
+	while(true){
+		string data;
+		archivo >> data;
+		if(data.empty()) break;
+
+		if(data[0] == '>') copiar = 0;
+		if(copiar) genoma += data;
+		if(data == "sequence") copiar = 1;
 	}
-
+	
+	archivo.close();
 	HashPerfecto h = HashPerfecto(&genoma);
 
-	cout << h.search("GGGGGGGGGGGGGGG") << endl;
+	string kmer;
+	cout << "Ingresar 15-mer a buscar, 0 para salir" << endl;
+	while(kmer != "0"){
+		cin >> kmer;
+		cout << "Cantidad: " << h.search(kmer) << endl;
+	}
 
 	cout << "Fin main()" << endl;
 	return 0;
