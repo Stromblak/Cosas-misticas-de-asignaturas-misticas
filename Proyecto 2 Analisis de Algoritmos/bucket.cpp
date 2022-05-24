@@ -3,24 +3,29 @@
 using namespace std;
 
 int M = INT_MIN; // max
-int n = 20;
+int n;
+
 /**
  * @brief funcion para asignar un bucket a un elemento del arreglo
  *
  * @param num elemento del arreglo
  * @param k numero de buckets
- * @return alguna posicion in
+ * @return alguna posicion int
  */
 int assign(int num, int k)
 {
-	return num / k;
+	return (k - 1) * num / M;
 }
 
 /**
- * @brief
+ * @brief Bucket Sort
+ * 1. Crea k buckets vacios
+ * 2. Asignar los n elementos del arreglo a un bucket con alguna funcion
+ * 3. Ordenar los k buckets con alguna funcion
+ * 4. Concatenar los buckets en el arreglo
  *
- * @param arr
- * @param k
+ * @param arr arreglo que se desea ordenar
+ * @param k numero de buckets
  */
 void bucketSort(int arr[], int k)
 {
@@ -37,29 +42,29 @@ void bucketSort(int arr[], int k)
 		sort(buckets[i].begin(), buckets[i].end());
 	// Concatenar los buckets en el arreglo
 	int index = 0;
-	for (int i = 0; i < n; i++)
+	for (int i = 0; i < k; i++)
 		for (int j = 0; j < buckets[i].size(); j++)
-		{
-			arr[index] = buckets[i][j];
-			index++;
-		}
+			arr[index++] = buckets[i][j];
 }
 
 /* Driver program to test above function */
 int main()
 {
 	srand(time(NULL));
+	cout << "Ingrese el numero de elementos (n) y el numero de buckets (k): \n";
+	int k;
+	cin >> n >> k;
+
 	int arr[n];
 	cout << "Elementos: \n";
 	for (int i = 0; i < n; i++)
 	{
 		arr[i] = rand() % 100;
 		cout << arr[i] << " ";
-		if (arr[i] > M)
+		if (arr[i] > M) // mayor
 			M = arr[i];
 	}
-	int k = 10;
-	// hay un error aqui creo ._.
+
 	bucketSort(arr, k);
 	cout << " \nOrdenados: \n";
 	for (int i = 0; i < n; i++)
