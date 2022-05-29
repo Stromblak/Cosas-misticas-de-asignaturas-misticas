@@ -7,6 +7,9 @@
 using namespace std;
 using namespace chrono;
 typedef unsigned int uint;
+typedef pair<int, int> ii;
+typedef vector<vector<ii>> vvii;
+
 
 /*
 	parece que cuando el p es muy alto deja de funcionar el hashing 
@@ -21,7 +24,7 @@ class HashPerfecto{
 	private:
 		string genoma;
 		map<int, int> mapkmers;
-		vector<vector<int>> tabla;
+		vector<vector<pair<int, int>>> tabla;
 		int p, k, rep4, rep2, pc;
 		int a, b, m, ai, bi, mi;
 		int h(int knum);
@@ -92,15 +95,15 @@ void HashPerfecto::procesarkmers(){
 void HashPerfecto::crearTabla(){
 	auto start = chrono::high_resolution_clock::now();
 
-	vector<vector<int>> tablaAux(m);
-	tabla = vector<vector<int>>(m);
+	vvii tablaAux(m);
+	tabla = vvii(m);
 
 	cout << "Creando tabla de primer nivel" << endl;
 	while(true){
 		int sum = 0;
 		a = (rand() + rand()<<15)%p;
 		b = (rand() + rand()<<15)%p;	
-		for(auto kmer: mapkmers) tablaAux[ h(kmer.first) ].push_back(kmer.first);
+		for(ii kmer: mapkmers) tablaAux[ h(kmer.first) ].push_back(kmer);
 		for(auto a: tablaAux) sum += a.size()*a.size();
 		if(sum < 4*m) break;
 		else rep4++;
@@ -115,19 +118,19 @@ void HashPerfecto::crearTabla(){
 		while(col){
 			ai = (rand() + rand()<<15)%p;
 			bi = (rand() + rand()<<15)%p;
-			tabla[i] = vector<int>(3 + mi);
+			tabla[i] =  vector<pair<int, int>>(3 + mi);
 
-			for(int knum: tablaAux[i]){
-				if( tabla[i][ 3+hi(knum) ] ){
+			for(ii kmer: tablaAux[i]){
+				if( tabla[i][ 3+hi(kmer.first) ].first ){
 					flag = 1;
 					break;
-				}else tabla[i][ 3+hi(knum) ] = mapkmers[knum];
+				}else tabla[i][ 3+hi(kmer.first) ] = kmer;
 			}
 
 			if(!flag){
-				tabla[i][0] = mi;
-				tabla[i][1] = ai;
-				tabla[i][2] = bi;
+				tabla[i][0] = {mi, 0};
+				tabla[i][1] = {ai, 0};
+				tabla[i][2] = {bi, 0};
 				break;
 			}else flag = 0;
 		}  
@@ -173,11 +176,13 @@ int HashPerfecto::search(string kmer){
 
 	if(tabla[pos].empty()) return 0;
 
-	mi = tabla[pos][0];
-	ai = tabla[pos][1];
-	bi = tabla[pos][2];
+	mi = tabla[pos][0].first;
+	ai = tabla[pos][1].first;
+	bi = tabla[pos][2].first;
 
-	return tabla[pos][3 + hi(knum)];
+	ii parKmer = tabla[pos][3 + hi(knum)];
+	if(parKmer.first == knum) return parKmer.second;
+	else return 0;
 }
 
 int main(){
@@ -203,12 +208,14 @@ int main(){
 		if(data == "sequence") copiar = 1;
 	}
 	
+	archivo.close();
 	HashPerfecto h = HashPerfecto(&genoma);
 
 	string kmer;
 	cout << "Ingresar 15-mer a buscar, 0 para salir" << endl;
-	while(kmer != "0"){
+	while(true){
 		cin >> kmer;
+		if(kmer == "0") break;
 		cout << "Cantidad: " << h.search(kmer) << endl;
 	}
 
