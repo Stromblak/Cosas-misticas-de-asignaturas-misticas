@@ -14,6 +14,8 @@ typedef vector<vector<ii>> vvii;
 
 	no te parece raro esto????
 	no vei algun problema el codigo o algo?
+
+	con nextPrime(m) se queda pegado derrepente
 */ 
 
 class HashPerfecto{
@@ -213,8 +215,8 @@ int main(){
 	cout << "Ingresar numero o nombre del archivo: ";
 	cin >> nombre;
 
-	if(nombre == "1") nombre =  polynesia;
-	if(nombre == "2") nombre =  "t.txt";
+	if(nombre == "1") nombre = polynesia;
+	if(nombre == "2") nombre = "t.txt";
 
 	ifstream archivo(nombre);
 	string genoma;
