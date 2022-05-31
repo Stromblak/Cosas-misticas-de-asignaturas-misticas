@@ -24,7 +24,7 @@ typedef vector<vector<ii>> vvii;
 	3m				500				1459
 	m				500				487
 
-
+	con 10m parece solucionarlo, aunque no me convence
 
 */ 
 
@@ -57,7 +57,7 @@ HashPerfecto::HashPerfecto(string gen){
 
 	genoma = gen;
 	m = procesarkmers();
-	p = nextPrime(2*m);
+	p = nextPrime(10*m);
 
 	rep = 1;
 	cota = 4*m;
@@ -120,22 +120,38 @@ void HashPerfecto::crearTabla(){
 		a = rng()%p;
 		b = rng()%p;	
 		for(ii kmer: mapkmers) tabla[ h(kmer.first) ].push_back(kmer);
-		for(auto a: tabla) c += a.size()*a.size();
+		for(vector<ii> v: tabla) c += v.size()*v.size();
 		if(c < cota) break;
 		else rep++;
 	}
 
 	for(int i=0; i<m; i++){
-		int flag = 0;
 		mi = tabla[i].size() * tabla[i].size();
 
 		int count = 0;
 		while(mi){
+			bool colision = false;
 			ai = rng()%p;
 			bi = rng()%p;
-
 			vector<ii> tabla2(3 + mi);
 
+			for(ii kmer: tabla[i]){
+				int pos = 3 + hi(kmer.first);
+				if(tabla2[pos].first == 0) tabla2[pos] = kmer;
+				else{
+					colision = true;
+					break;
+				}
+			}
+
+			if(colision == false){
+				tabla2[0] = {mi, 0};
+				tabla2[1] = {ai, 0};
+				tabla2[2] = {bi, 0};
+				tabla[i] = tabla2;
+				break;
+			}
+			//-------------
 			count++;
 			if(count > 1000000){
 
@@ -152,21 +168,6 @@ void HashPerfecto::crearTabla(){
 				return;
 			}
 
-			for(ii kmer: tabla[i]){
-				int pos = 3 + hi(kmer.first);
-				if( tabla2[pos].first ){
-					flag = 1;
-					break;
-				}else tabla2[pos] = kmer;
-			}
-
-			if(!flag){
-				tabla2[0] = {mi, 0};
-				tabla2[1] = {ai, 0};
-				tabla2[2] = {bi, 0};
-				tabla[i] = tabla2;
-				break;
-			}else flag = 0;
 		}
 	}
 }
