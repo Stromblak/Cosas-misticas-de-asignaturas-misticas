@@ -3,9 +3,10 @@
 #include <unordered_map>
 #include <chrono>
 #include <fstream>  
+#include <random>
+
 using namespace std;
 using namespace chrono;
-typedef unsigned int uint;
 typedef pair<int, int> ii;
 typedef vector<vector<ii>> vvii;
 
@@ -13,14 +14,25 @@ typedef vector<vector<ii>> vvii;
 	me salen las repeticiones de busqueda a y b siempre en 1, ni idea si esta bien
 	no te parece raro?
 
-	con nextPrime(m) se queda pegado derrepente
+
+	por alguna razon derrepente no encuentra a y b en la segunda tabla cuando:
+	nextPrime()		genoma.size()	p
+	2m				150				277
+	m				150				137	
+	3m				150				409	
+	3m				500				1459
+	m				500				487
+
+
+
 */ 
 
 class HashPerfecto{
 	private:
-		vvii tabla;
+		minstd_rand rng;
 		string genoma;
 		unordered_map<int, int> mapkmers;
+		vvii tabla;
 		int k, rep, cota;
 		int a, b, m, ai, bi, mi, p;
 		int h(int kmerc);
@@ -31,30 +43,35 @@ class HashPerfecto{
 		void crearTabla();
 
 	public:
-		HashPerfecto(string *gen);
+		HashPerfecto(string gen);
 		int count(string kmer);
 		int repeticiones();
 };
 
-HashPerfecto::HashPerfecto(string *gen){
-	srand( time(NULL) );
-	rand();
-	genoma = *gen;
+HashPerfecto::HashPerfecto(string gen){
+	rng.seed(time(NULL));
 	k = 15;
+
+	if(gen.size() < k) throw invalid_argument("Genoma de largo insuficiente");
+
+	genoma = gen;
 	m = procesarkmers();
-	p = nextPrime(2*m);
+	p = nextPrime(m);
+
 	rep = 1;
 	cota = 4*m;
 	crearTabla();
+
+	genoma.clear();
 	mapkmers.clear();
 }
 
 int HashPerfecto::h(int kmerc){
-	return ( (uint)(a*kmerc + b)%p )%m;
+	return abs( ((a*kmerc + b)%p )%m);
 }
 
 int HashPerfecto::hi(int kmerc){
-	return ( (uint)(ai*kmerc + bi)%p )%mi;
+	return abs( ((ai*kmerc + bi)%p )%mi );
 }
 
 int HashPerfecto::nextPrime(int n){
@@ -100,8 +117,8 @@ void HashPerfecto::crearTabla(){
 
 	while(true){
 		int c = 0;
-		a = (rand() + rand()<<15)%p;
-		b = (rand() + rand()<<15)%p;	
+		a = rng()%p;
+		b = rng()%p;	
 		for(ii kmer: mapkmers) tablaAux[ h(kmer.first) ].push_back(kmer);
 		for(auto a: tablaAux) c += a.size()*a.size();
 		if(c < cota) break;
@@ -109,19 +126,34 @@ void HashPerfecto::crearTabla(){
 	}
 
 	for(int i=0; i<m; i++){
-		int col = tablaAux[i].size(), flag = 0;
-		mi = col*col;
+		int flag = 0;
+		mi = tablaAux[i].size() * tablaAux[i].size();
 
-		while(col){
-			ai = (rand() + rand()<<15)%p;
-			bi = (rand() + rand()<<15)%p;
-			tabla[i] =  vector<ii>(3 + mi);
+		int count = 0;
+		while(mi){
+			ai = rng()%p;
+			bi = rng()%p;
+			tabla[i] = vector<ii>(3 + mi);
+
+			count++;
+			if(count > 100000){
+
+				cout << endl;
+				cout << "Fallo" << endl;
+				cout << "p " << p << endl;
+				cout << "ai "<< ai << endl;
+				cout << "bi "<< bi << endl;
+				cout << "mi "<< mi << endl;
+				cout << endl;
+				return;
+			}
 
 			for(ii kmer: tablaAux[i]){
-				if( tabla[i][ 3+hi(kmer.first) ].first ){
+				int pos2 = 3 + hi(kmer.first);
+				if( tabla[i][pos2].first ){
 					flag = 1;
 					break;
-				}else tabla[i][ 3+hi(kmer.first) ] = kmer;
+				}else tabla[i][pos2] = kmer;
 			}
 
 			if(!flag){
@@ -156,6 +188,26 @@ int HashPerfecto::repeticiones(){
 }
 
 int main(){
+
+	int n = 50, ts = 500;
+	minstd_rand rng(time(NULL));
+
+	for(int i=0; i<n; i++){
+		string s;
+		for(int j=0; j<ts; j++){
+			int r = rng()%4;
+			if(r == 0) s += 'A';
+			if(r == 1) s += 'C';
+			if(r == 2) s += 'T';
+			if(r == 3) s += 'G';
+		}
+
+		HashPerfecto h = HashPerfecto(s);
+		printf("Repeticiones %d: %d \n", i+1, h.repeticiones());
+	}
+}
+
+int main2(){
 	string nombre;
 	string polynesia = "GCF_000820745.1_Polynesia_massiliensis_MS3_genomic.fna";
 
@@ -179,12 +231,10 @@ int main(){
 		if(copiar) genoma += data;
 		if(data == "sequence") copiar = 1;
 	}
-	
 	archivo.close();
-	HashPerfecto h = HashPerfecto(&genoma);
+	HashPerfecto h = HashPerfecto(genoma);
 
 	cout << "Repeticiones: " << h.repeticiones() << endl;
-
 
 	string kmer;
 	cout << "Ingresar 15-mer a buscar, 0 para salir" << endl;
