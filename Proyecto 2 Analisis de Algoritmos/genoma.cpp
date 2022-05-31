@@ -20,6 +20,7 @@ typedef vector<vector<ii>> vvii;
 	2m				150				277
 	m				150				137	
 	3m				150				409	
+
 	3m				500				1459
 	m				500				487
 
@@ -56,7 +57,7 @@ HashPerfecto::HashPerfecto(string gen){
 
 	genoma = gen;
 	m = procesarkmers();
-	p = nextPrime(m);
+	p = nextPrime(2*m);
 
 	rep = 1;
 	cota = 4*m;
@@ -67,7 +68,7 @@ HashPerfecto::HashPerfecto(string gen){
 }
 
 int HashPerfecto::h(int kmerc){
-	return abs( ((a*kmerc + b)%p )%m);
+	return abs( ((a*kmerc + b)%p )%m );
 }
 
 int HashPerfecto::hi(int kmerc){
@@ -112,31 +113,31 @@ int HashPerfecto::procesarkmers(){
 }
 
 void HashPerfecto::crearTabla(){
-	vvii tablaAux(m);
 	tabla = vvii(m);
 
 	while(true){
 		int c = 0;
 		a = rng()%p;
 		b = rng()%p;	
-		for(ii kmer: mapkmers) tablaAux[ h(kmer.first) ].push_back(kmer);
-		for(auto a: tablaAux) c += a.size()*a.size();
+		for(ii kmer: mapkmers) tabla[ h(kmer.first) ].push_back(kmer);
+		for(auto a: tabla) c += a.size()*a.size();
 		if(c < cota) break;
 		else rep++;
 	}
 
 	for(int i=0; i<m; i++){
 		int flag = 0;
-		mi = tablaAux[i].size() * tablaAux[i].size();
+		mi = tabla[i].size() * tabla[i].size();
 
 		int count = 0;
 		while(mi){
 			ai = rng()%p;
 			bi = rng()%p;
-			tabla[i] = vector<ii>(3 + mi);
+
+			vector<ii> tabla2(3 + mi);
 
 			count++;
-			if(count > 100000){
+			if(count > 1000000){
 
 				cout << endl;
 				cout << "Fallo" << endl;
@@ -144,22 +145,26 @@ void HashPerfecto::crearTabla(){
 				cout << "ai "<< ai << endl;
 				cout << "bi "<< bi << endl;
 				cout << "mi "<< mi << endl;
+
+				cout << "kmers codificados" << endl;
+				for(auto a: tabla[i]) cout << a.first << endl;
 				cout << endl;
 				return;
 			}
 
-			for(ii kmer: tablaAux[i]){
-				int pos2 = 3 + hi(kmer.first);
-				if( tabla[i][pos2].first ){
+			for(ii kmer: tabla[i]){
+				int pos = 3 + hi(kmer.first);
+				if( tabla2[pos].first ){
 					flag = 1;
 					break;
-				}else tabla[i][pos2] = kmer;
+				}else tabla2[pos] = kmer;
 			}
 
 			if(!flag){
-				tabla[i][0] = {mi, 0};
-				tabla[i][1] = {ai, 0};
-				tabla[i][2] = {bi, 0};
+				tabla2[0] = {mi, 0};
+				tabla2[1] = {ai, 0};
+				tabla2[2] = {bi, 0};
+				tabla[i] = tabla2;
 				break;
 			}else flag = 0;
 		}
@@ -189,7 +194,7 @@ int HashPerfecto::repeticiones(){
 
 int main(){
 
-	int n = 50, ts = 500;
+	int n = 50, ts = 150;
 	minstd_rand rng(time(NULL));
 
 	for(int i=0; i<n; i++){
