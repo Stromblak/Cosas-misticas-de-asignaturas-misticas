@@ -10,9 +10,6 @@ using namespace chrono;
 
 class HashPerfecto{
 	private:
-		minstd_rand rng;
-		string genoma;
-		unordered_set<int> setKmers;
 		vector<vector<int>> tabla;
 		int k, rep, cota;
 		int a, b, m, ai, bi, mi, p;
@@ -20,31 +17,27 @@ class HashPerfecto{
 		int hi(int kmerc);
 		int nextPrime(int n);
 		int codificar(string kmer);
-		int procesarkmers();
-		void crearTabla();
+		int procesarkmers(string &genoma, unordered_set<int> &setKmers);
+		void crearTabla(unordered_set<int> &setKmers);
 
 	public:
-		HashPerfecto(string gen);
+		HashPerfecto(string &genoma);
 		bool search(string kmer);
 		int repeticiones();
+		int memoria();
 };
 
-HashPerfecto::HashPerfecto(string gen){
-	rng.seed(time(NULL));
+HashPerfecto::HashPerfecto(string &genoma){
 	k = 15;
+	if(genoma.size() < k) throw invalid_argument("Genoma de largo insuficiente");
 
-	if(gen.size() < k) throw invalid_argument("Genoma de largo insuficiente");
-
-	genoma = gen;
-	m = procesarkmers();
+	unordered_set<int> setKmers;
+	m = procesarkmers(genoma, setKmers);
 	p = nextPrime(10*m);
 
 	rep = 1;
 	cota = 4*m;
-	crearTabla();
-
-	genoma.clear();
-	setKmers.clear();
+	crearTabla(setKmers);
 }
 
 int HashPerfecto::h(int kmerc){
@@ -86,13 +79,15 @@ int HashPerfecto::codificar(string kmer){
 	return kmerc;
 }
 
-int HashPerfecto::procesarkmers(){
+int HashPerfecto::procesarkmers(string &genoma, unordered_set<int> &setKmers){
 	for(int i=0; i<genoma.size()-(k-1); i++)
 		setKmers.insert( codificar( genoma.substr(i, k) ) );
 	return setKmers.size();
 }
 
-void HashPerfecto::crearTabla(){
+void HashPerfecto::crearTabla(unordered_set<int> &setKmers){
+	minstd_rand rng(time(NULL));
+
 	while(true){
 		int c = 0;
 		a = rng()%p;
@@ -132,22 +127,6 @@ void HashPerfecto::crearTabla(){
 				tabla[i] = tabla2;
 				break;
 			}
-			//-------------
-			count++;
-			if(count > 1000000){
-
-				cout << endl;
-				cout << "Fallo Tabla 2" << endl;
-				cout << "p " << p << endl;
-				cout << "ai "<< ai << endl;
-				cout << "bi "<< bi << endl;
-				cout << "mi "<< mi << endl;
-
-				cout << "kmers codificados" << endl;
-				for(auto a: tabla[i]) cout << a << endl;
-				cout << endl;
-				return;
-			}
 		}
 	}
 }
@@ -173,63 +152,120 @@ int HashPerfecto::repeticiones(){
 	return rep;
 }
 
-int main(){
+int HashPerfecto::memoria(){
+	int mem = 0;
+	mem += sizeof(HashPerfecto);
+	mem += sizeof(int)*10;
+	mem += sizeof(vector<vector<int>>);
+	for(vector<int> v: tabla) mem += sizeof(vector<int>) + sizeof(int)*v.capacity();
+	return mem;
+};
 
-	int n = 50, ts = 150;
+int stats(){
+	int iter = 15, rep = 10, ts = 100, busq = 10000;
 	minstd_rand rng(time(NULL));
 
-	for(int i=0; i<n; i++){
-		string s;
-		for(int j=0; j<ts; j++){
-			int r = rng()%4;
-			if(r == 0) s += 'A';
-			if(r == 1) s += 'C';
-			if(r == 2) s += 'T';
-			if(r == 3) s += 'G';
-		}
+	vector<int> repeticiones(iter), memoria(iter), tCrearTabla(iter), tBusqueda(iter), tam(iter);
 
-		HashPerfecto h = HashPerfecto(s);
-		printf("Repeticiones %d: %d \n", i+1, h.repeticiones());
+	for(int i=0; i<iter; i++){
+		for(int j=0; j<rep; j++){	
+
+			string s;
+			tam[i] = ts*(i+1);
+			for(int k=0; k<ts*(i+1); k++){
+				int r = rng()%4;
+				if(r == 0) s += 'A';
+				if(r == 1) s += 'C';
+				if(r == 2) s += 'T';
+				if(r == 3) s += 'G';
+			}
+			auto start = high_resolution_clock::now();
+			HashPerfecto h = HashPerfecto(s);
+			auto finish = high_resolution_clock::now();
+			tCrearTabla[i] += duration_cast<microseconds> (finish - start).count();
+
+			string b;
+			for(int k=0; k<15; k++){
+				for(int m=0; m<15; m++){
+					int r = rng()%4;
+					if(r == 0) b += 'A';
+					if(r == 1) b += 'C';
+					if(r == 2) b += 'T';
+					if(r == 3) b += 'G';
+				}
+			}
+			start = high_resolution_clock::now();
+			for(int k=0; k<busq; k++) h.search(b);
+			finish = high_resolution_clock::now();
+			tBusqueda[i] += duration_cast<nanoseconds> (finish - start).count();
+
+			repeticiones[i] += h.repeticiones();
+			memoria[i] += h.memoria();
+		}
 	}
+	cout << endl << "Tam" << endl;
+	for(auto a: tam) cout << a << endl;
+
+	cout << endl << "Rep" << endl;
+	for(auto a: repeticiones) cout << (float)a / rep << endl;
+
+	cout << endl << "Mem" << endl;
+	for(auto a: memoria) cout << (float)a / rep << endl;
+
+	cout << endl << "T crear" << endl;
+	for(auto a: tCrearTabla) cout << (float)a / rep << endl;
+
+	cout << endl << "T busqueda" << endl;
+	for(auto a: tBusqueda) cout << (float)a / (rep*busq) << endl;
 }
 
-int main2(){
-	string nombre;
-	string polynesia = "GCF_000820745.1_Polynesia_massiliensis_MS3_genomic.fna";
+int main(){
+	cout << "1: Ingreso de archivo" << endl;
+	cout << "2: Ingreso manual de string" << endl;
+	int n;
+	cin >> n;
+	cout << endl;
 
-	cout << "1: " << polynesia << endl;
-	cout << "2: t.txt" << endl;
-	cout << "Ingresar numero o nombre del archivo: ";
-	cin >> nombre;
-
-	if(nombre == "1") nombre = polynesia;
-	if(nombre == "2") nombre = "t.txt";
-
-	ifstream archivo(nombre);
 	string genoma;
-	int copiar = 1;
-	while(true){
-		string data;
-		archivo >> data;
-		if(data.empty()) break;
+	if(n == 1){
+		string nombre;
+		string polynesia = "GCF_000820745.1_Polynesia_massiliensis_MS3_genomic.fna";
+		cout << "1: " << polynesia << endl;
+		cout << "2: t.txt" << endl;
+		cout << "Ingresar numero o nombre del archivo: ";
+		cin >> nombre;
 
-		if(data[0] == '>') copiar = 0;
-		if(copiar) genoma += data;
-		if(data == "sequence") copiar = 1;
+		if(nombre == "1") nombre = polynesia;
+		if(nombre == "2") nombre = "t.txt";
+
+		ifstream archivo(nombre);
+		int copiar = 1;
+		while(true){
+			string data;
+			archivo >> data;
+			if(data.empty()) break;
+
+			if(data[0] == '>') copiar = 0;
+			if(copiar) genoma += data;
+			if(data == "sequence") copiar = 1;
+		}
+		archivo.close();
+
+	}else{
+		cout << "Ingresar string" << endl;
+		cin >> genoma;
 	}
-	archivo.close();
+
 	HashPerfecto h = HashPerfecto(genoma);
-
-	cout << "Repeticiones: " << h.repeticiones() << endl;
-
-	string kmer;
-	cout << "Ingresar 15-mer a buscar, 0 para salir" << endl;
+	
+	cout << endl << "Ingresar 15-mer a buscar, 0 para salir" << endl;
 	while(true){
+		string kmer;
 		cin >> kmer;
 		if(kmer == "0") break;
-		cout << "Existe: " << h.search(kmer) << endl;
+		if(h.search(kmer)) cout << "Presente en el genoma" << endl;
+		else cout << "No presente en el genoma" << endl;
 	}
 
-	cout << "Fin main()" << endl;
 	return 0;
 }
