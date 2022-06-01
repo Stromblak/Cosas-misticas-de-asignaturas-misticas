@@ -11,9 +11,7 @@ typedef pair<int, int> ii;
 typedef vector<vector<ii>> vvii;
 
 /*
-	me salen las repeticiones de busqueda a y b siempre en 1, ni idea si esta bien
-	no te parece raro?
-
+	me salen las repeticiones de busqueda a y b siempre en 1 con la cota 4m, ni idea si esta bien
 
 	por alguna razon derrepente no encuentra a y b en la segunda tabla cuando:
 	nextPrime()		genoma.size()	p
@@ -25,6 +23,7 @@ typedef vector<vector<ii>> vvii;
 	m				500				487
 
 	con 10m parece solucionarlo, aunque no me convence
+
 
 */ 
 
@@ -57,7 +56,7 @@ HashPerfecto::HashPerfecto(string gen){
 
 	genoma = gen;
 	m = procesarkmers();
-	p = nextPrime(10*m);
+	p = nextPrime(m);
 
 	rep = 1;
 	cota = 4*m;
@@ -113,12 +112,11 @@ int HashPerfecto::procesarkmers(){
 }
 
 void HashPerfecto::crearTabla(){
-	tabla = vvii(m);
-
 	while(true){
 		int c = 0;
 		a = rng()%p;
 		b = rng()%p;	
+		tabla = vvii(m);
 		for(ii kmer: mapkmers) tabla[ h(kmer.first) ].push_back(kmer);
 		for(vector<ii> v: tabla) c += v.size()*v.size();
 		if(c < cota) break;
@@ -156,7 +154,7 @@ void HashPerfecto::crearTabla(){
 			if(count > 1000000){
 
 				cout << endl;
-				cout << "Fallo" << endl;
+				cout << "Fallo Tabla 2" << endl;
 				cout << "p " << p << endl;
 				cout << "ai "<< ai << endl;
 				cout << "bi "<< bi << endl;
@@ -167,7 +165,6 @@ void HashPerfecto::crearTabla(){
 				cout << endl;
 				return;
 			}
-
 		}
 	}
 }
