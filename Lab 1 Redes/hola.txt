@@ -1,0 +1,5 @@
+
+el codigo lo saque de una de las tareas del profe (en la que se tenia que comentar)
+solo le agregue pa que se pueda enviar archivo con nombre
+g++ client.cpp -o client.out
+g++ server.cpp -o server.out
