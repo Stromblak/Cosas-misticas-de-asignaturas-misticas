@@ -1,38 +1,19 @@
 #include <iostream>
 #include <vector>
-#include <unordered_map>
+#include <unordered_set>
 #include <chrono>
 #include <fstream>  
 #include <random>
 
 using namespace std;
 using namespace chrono;
-typedef pair<int, int> ii;
-typedef vector<vector<ii>> vvii;
-
-/*
-	me salen las repeticiones de busqueda a y b siempre en 1 con la cota 4m, ni idea si esta bien
-
-	por alguna razon derrepente no encuentra a y b en la segunda tabla cuando:
-	nextPrime()		genoma.size()	p
-	2m				150				277
-	m				150				137	
-	3m				150				409	
-
-	3m				500				1459
-	m				500				487
-
-	con 10m parece solucionarlo, aunque no me convence
-
-
-*/ 
 
 class HashPerfecto{
 	private:
 		minstd_rand rng;
 		string genoma;
-		unordered_map<int, int> mapkmers;
-		vvii tabla;
+		unordered_set<int> setKmers;
+		vector<vector<int>> tabla;
 		int k, rep, cota;
 		int a, b, m, ai, bi, mi, p;
 		int h(int kmerc);
@@ -44,7 +25,7 @@ class HashPerfecto{
 
 	public:
 		HashPerfecto(string gen);
-		int count(string kmer);
+		bool search(string kmer);
 		int repeticiones();
 };
 
@@ -56,14 +37,14 @@ HashPerfecto::HashPerfecto(string gen){
 
 	genoma = gen;
 	m = procesarkmers();
-	p = nextPrime(m);
+	p = nextPrime(10*m);
 
 	rep = 1;
 	cota = 4*m;
 	crearTabla();
 
 	genoma.clear();
-	mapkmers.clear();
+	setKmers.clear();
 }
 
 int HashPerfecto::h(int kmerc){
@@ -106,9 +87,9 @@ int HashPerfecto::codificar(string kmer){
 }
 
 int HashPerfecto::procesarkmers(){
-	for(int i=0; i<genoma.size()-(k-1); i++) 
-		mapkmers[ codificar( genoma.substr(i, k) ) ]++;
-	return mapkmers.size();
+	for(int i=0; i<genoma.size()-(k-1); i++)
+		setKmers.insert( codificar( genoma.substr(i, k) ) );
+	return setKmers.size();
 }
 
 void HashPerfecto::crearTabla(){
@@ -116,11 +97,13 @@ void HashPerfecto::crearTabla(){
 		int c = 0;
 		a = rng()%p;
 		b = rng()%p;	
-		tabla = vvii(m);
-		for(ii kmer: mapkmers) tabla[ h(kmer.first) ].push_back(kmer);
-		for(vector<ii> v: tabla) c += v.size()*v.size();
-		if(c < cota) break;
-		else rep++;
+		vector<vector<int>> tabla1(m);
+		for(int kmer: setKmers) tabla1[ h(kmer) ].push_back(kmer);
+		for(vector<int> v: tabla1) c += v.size()*v.size();
+		if(c < cota){
+			tabla = tabla1;
+			break;
+		}else rep++;
 	}
 
 	for(int i=0; i<m; i++){
@@ -131,11 +114,11 @@ void HashPerfecto::crearTabla(){
 			bool colision = false;
 			ai = rng()%p;
 			bi = rng()%p;
-			vector<ii> tabla2(3 + mi);
+			vector<int> tabla2(3 + mi);
 
-			for(ii kmer: tabla[i]){
-				int pos = 3 + hi(kmer.first);
-				if(tabla2[pos].first == 0) tabla2[pos] = kmer;
+			for(int kmer: tabla[i]){
+				int pos = 3 + hi(kmer);
+				if(tabla2[pos] == 0) tabla2[pos] = kmer;
 				else{
 					colision = true;
 					break;
@@ -143,9 +126,9 @@ void HashPerfecto::crearTabla(){
 			}
 
 			if(colision == false){
-				tabla2[0] = {mi, 0};
-				tabla2[1] = {ai, 0};
-				tabla2[2] = {bi, 0};
+				tabla2[0] = mi;
+				tabla2[1] = ai;
+				tabla2[2] = bi;
 				tabla[i] = tabla2;
 				break;
 			}
@@ -161,7 +144,7 @@ void HashPerfecto::crearTabla(){
 				cout << "mi "<< mi << endl;
 
 				cout << "kmers codificados" << endl;
-				for(auto a: tabla[i]) cout << a.first << endl;
+				for(auto a: tabla[i]) cout << a << endl;
 				cout << endl;
 				return;
 			}
@@ -169,21 +152,21 @@ void HashPerfecto::crearTabla(){
 	}
 }
 
-int HashPerfecto::count(string kmer){
-	if(kmer.size() != k) return -1;
+bool HashPerfecto::search(string kmer){
+	if(kmer.size() != k) return false;
 
 	int kmerc = codificar(kmer);
 	int pos1 = h(kmerc);
 
-	if(tabla[pos1].empty()) return 0;
+	if(tabla[pos1].empty()) return false;
 
-	mi = tabla[pos1][0].first;
-	ai = tabla[pos1][1].first;
-	bi = tabla[pos1][2].first;
+	mi = tabla[pos1][0];
+	ai = tabla[pos1][1];
+	bi = tabla[pos1][2];
 
-	ii parKmer = tabla[pos1][3 + hi(kmerc)];
-	if(parKmer.first == kmerc) return parKmer.second;
-	else return 0;
+	int kmerTabla = tabla[pos1][3 + hi(kmerc)];
+	if(kmerTabla == kmerc) return true;
+	else return false;
 }
 
 int HashPerfecto::repeticiones(){
@@ -244,7 +227,7 @@ int main2(){
 	while(true){
 		cin >> kmer;
 		if(kmer == "0") break;
-		cout << "Cantidad: " << h.count(kmer) << endl;
+		cout << "Existe: " << h.search(kmer) << endl;
 	}
 
 	cout << "Fin main()" << endl;
