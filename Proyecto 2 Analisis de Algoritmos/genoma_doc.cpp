@@ -198,10 +198,14 @@ void HashPerfecto::crearTabla(unordered_set<int> &setKmers)
 			bi = rng() % p;
 			vector<int> tabla2(3 + mi); // 3 espacios para almacenar ai, bi, mi
 
+			// recorrer todos los elementos de un bucket de la tabla de primer nivel,
+			// ya que los elementos solo fueron insertados, sin hash
+			// hacerles hash a una tabla auxiliar
+			// la tabla auxiliar se convertira en la tabla real de ese bucket
 			for (int kmer : tabla[i])
 			{
-				int pos = 3 + hi(kmer);
-				if (tabla2[pos] == 0)
+				int pos = 3 + hi(kmer); // hash
+				if (!tabla2[pos])
 					tabla2[pos] = kmer;
 				// si ya existe un elemento (colision)
 				else
@@ -211,7 +215,7 @@ void HashPerfecto::crearTabla(unordered_set<int> &setKmers)
 				}
 			}
 			// tripleta ai, bi, mi
-			if (colision == false)
+			if (!colision)
 			{
 				tabla2[0] = mi;
 				tabla2[1] = ai;
