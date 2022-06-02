@@ -1,70 +1,57 @@
 #include <iostream>
 #include <vector>
-#include <map>
+#include <unordered_set>
 #include <chrono>
+#include <fstream>
+#include <random>
 
 using namespace std;
 using namespace chrono;
-typedef unsigned int uint;
 
-/*
-	El archivo .fna se puede colocar como input
-	por alguna razon en powershell no pesca el '<', encontre esta solucion
-	cmd /c ".\a.exe < GCF_000820745.1_Polynesia_massiliensis_MS3_genomic.fna"
-	no se si conoces alguna mejor
-
-	parece que cuando el p es muy alto deja de funcionar el hashing
-
-	si se busca un kmer que no existe es posible que no devuelva 0,
-	supongo que es naturaleza del hash y no algun bug xD
-
-	me salen las repeticiones de busqueda a y b, casi siempre en 1, ni idea si esta bien
-*/
-
+/**
+ * @brief Clase que creara la tabla hash, almacenando los k-mers del genoma
+ *
+ */
 class HashPerfecto
 {
 private:
-	string genoma;			   // GCF_000820745.1_Polynesia_massiliensis_MS3_genomic.fna
-	map<int, int> mapkmers;	   // map kmer y numero de repeticiones
-	vector<vector<int>> tabla; // tabla hash de 2 niveles
-	int p, k, rep4, rep2, pc;  // primo, 15, repeticiones 4n, repeticiones 2n
-	int a, b, m, ai, bi, mi;
-	int h(int knum);			// hash tabla de primer nivel
-	int hi(int knum);			// hash tabla de segundo nivel
-	int kmerToInt(string kmer); // 15-mer a int
-	void procesarkmers();		// crear los kmers a partir del genoma
-	void crearTabla();			// hashing a la tabla
-	void porcentaje(int i, int j);
-	void tabla2n(); // hashing a la tabla, condicion 2n
+	vector<vector<int>> tabla;										 // tabla hash de 2 niveles
+	int k, rep, cota;												 // 15, repeticiones, cota 4m/2m
+	int a, b, m, ai, bi, mi, p;										 // a y b son valores aleatorios, m es el numero de bucekts y p es un numero primo
+	int h(int kmerc);												 // hash para la tabla de primer nivel
+	int hi(int kmerc);												 // hash para la tabla de segundo nivel
+	int nextPrime(int n);											 // calcular proximo primo
+	int codificar(string kmer);										 // transformar el k-mer de string a int
+	int procesarkmers(string &genoma, unordered_set<int> &setKmers); // transformar el genoma a k-mers y codificarlos
+	void crearTabla(unordered_set<int> &setKmers);					 // crear la tabla y almacenar los k-mers mediante hashing
 
 public:
-	HashPerfecto(string *gen); // Constructor
-	int search(string kmer);   // buscar la posicion????? del kmer
+	HashPerfecto(string &genoma); // constructor
+	bool search(string kmer);	  // buscar si existe el k-mer
+	int repeticiones();			  // retornar el numero de repeticiones (rep)
+	int memoria();				  // para analisis experimental de la memoria
 };
 
 /**
  * @brief Construct a new Hash Perfecto:: Hash Perfecto object
- * Para empezar, primero se deben inicializar todos los valores necesarios.
- * Luego, se deben crear los kmers que seran almacenados mediante hashing a una tabla
- * Finalmente, se hace hash a los kmers y se crea la tabla hash
- * @param gen genoma
+ * Antes de crear la tabla hash se deben inicializar y validar todos los valores necesarios.
+ * Luego, se deben crear los k-mers del genoma (se almacenaran en un set temporalmente) y que seran almacenados mediante hashing a una tabla.
+ * Finalmente, se hace hash a los k-mers y se crea la tabla hash.
+ * @param genoma genoma
  */
-HashPerfecto::HashPerfecto(string *gen)
+HashPerfecto::HashPerfecto(string &genoma)
 {
-	srand(time(NULL));
-	rand();
-	genoma = *gen;
-	p = 7595479; // primo mas despues de .....?
 	k = 15;
-	rep4 = rep2 = 1;
-	pc = 10;
+	if (genoma.size() < k)
+		throw invalid_argument("Genoma de largo insuficiente");
 
-	procesarkmers();
-	crearTabla();
-	mapkmers.clear();
+	unordered_set<int> setKmers;
+	m = procesarkmers(genoma, setKmers);
+	p = nextPrime(10 * m);
 
-	cout << "Repeticiones 4n: " << rep4 << endl;
-	cout << "Repeticiones 2n: " << rep2 << endl;
+	rep = 1;
+	cota = 4 * m;
+	crearTabla(setKmers);
 }
 
 /**
@@ -74,298 +61,375 @@ HashPerfecto::HashPerfecto(string *gen)
  * y m el numero de buckets de la tabla.
  * h(k) = ((a × k + b)mod p)mod m)
 
- * @param knum (int)kmer
+ * @param kmerc (int)kmer
  * @return bucket, primer nivel
  */
-int HashPerfecto::h(int knum)
+int HashPerfecto::h(int kmerc)
 {
-	return ((uint)(a * knum + b) % p) % m;
+	return abs(((a * kmerc + b) % p) % m);
 }
 
 /**
  * @brief Hashing tabla de segundo nivel
  *
- * @param knum (int)kmer
+ * @param kmerc (int)kmer
  * @return bucket, segundo nivel, donde se almacenara el kmer
  */
-int HashPerfecto::hi(int knum)
+int HashPerfecto::hi(int kmerc)
 {
-	return ((uint)(ai * knum + bi) % p) % mi;
+	return abs(((ai * kmerc + bi) % p) % mi);
 }
 
 /**
- * @brief Transformar el string kmer a int
+ * @brief Encontrar el proximo primo?, dado un n
+ *
+ * @param n valor al cual se desea buscar su proximo primo
+ * @return int, proximo primo
+ */
+int HashPerfecto::nextPrime(int n)
+{
+	while (true)
+	{
+		int flag = 1;
+		n++;
+
+		if (n <= 1)
+			continue;
+		else if (n <= 3)
+			break;
+		else if (n % 2 == 0 || n % 3 == 0)
+			continue;
+		else
+			for (int i = 5; i * i <= n; i = i + 6)
+			{
+				if (n % i == 0 || n % (i + 2) == 0)
+				{
+					flag = 0;
+					break;
+				}
+			}
+		if (flag)
+			break;
+	}
+	return n;
+}
+
+/**
+ * @brief Codificar el string kmer a int
  *
  * @param kmer kmer en string
  * @return kmer como int
  */
-int HashPerfecto::kmerToInt(string kmer)
+int HashPerfecto::codificar(string kmer)
 {
-	int knum = 0;
+	int kmerc = 0;
 	for (int i = 0; i < k; i++)
 	{
-		/*
 		if (kmer[i] == 'A')
-			knum += 0 << i * 2;
+			kmerc += 0 << i * 2;
 		else if (kmer[i] == 'C')
-			knum += 1 << i * 2;
+			kmerc += 1 << i * 2;
 		else if (kmer[i] == 'T')
-			knum += 2 << i * 2;
+			kmerc += 2 << i * 2;
 		else if (kmer[i] == 'G')
-			knum += 3 << i * 2;
-		*/
-		// le puse un case switch pa que se viera mas bonito, no se si lo queri dejar asi o como antes
-		// (no lo he probrado)
-		switch (kmer[i])
-		{
-		case 'A':
-			knum += 0 << i * 2;
-			break;
-		case 'C':
-			knum += 1 << i * 2;
-			break;
-		case 'T':
-			knum += 2 << i * 2;
-			break;
-		case 'G':
-			knum += 3 << i * 2;
-			break;
-		}
+			kmerc += 3 << i * 2;
+		else
+			throw invalid_argument("Nucleotido invalido");
 	}
-	return knum;
+	return kmerc;
 }
 
 /**
  * @brief Mapear todos los 15-mers
  * Se elige un pedazo de largo 15 del string genoma para el 15-mer, y luego se transforma a int.
- * Despues, se almacena el 15-mer (int) en un map.
+ * Despues, se almacena el 15-mer (int) en el set.
  * Se utiliza la funcion substr(i, k), ya que el 15-mer empiza en la posicion i, tiene un largo k = 15
+ * @param genoma el genoma (string)
+ * @param setKmers set que almacenara los 15-mers
+ * @return int, numero de k-mers no distintos
  */
-void HashPerfecto::procesarkmers()
+int HashPerfecto::procesarkmers(string &genoma, unordered_set<int> &setKmers)
 {
-	cout << "Procesando k-mers" << endl;
-	auto start = high_resolution_clock::now();
-
 	for (int i = 0; i < genoma.size() - (k - 1); i++)
-	{
-		porcentaje(i, genoma.size() - (k - 1));
-		mapkmers[kmerToInt(genoma.substr(i, k))]++;
-	}
-	m = mapkmers.size();
-
-	cout << "Tiempo requerido: " << duration_cast<seconds>(high_resolution_clock::now() - start).count() << "s" << endl
-		 << endl;
-	;
+		setKmers.insert(codificar(genoma.substr(i, k)));
+	return setKmers.size();
 }
 
 /**
  * @brief Creacion de las 2 tablas
  * Tabla de primer nivel: Para determinar funcion hash, h, de primer nivel.
  * Elegir m = n, p > |S|, y a y b aleatoriamente en un rango [0..p − 1].
+ * @param setKmers set que contiene los k-mers
  */
-void HashPerfecto::crearTabla()
+void HashPerfecto::crearTabla(unordered_set<int> &setKmers)
 {
-	auto start = chrono::high_resolution_clock::now();
+	minstd_rand rng(time(NULL));
 
-	vector<vector<int>> tablaAux(m); // tabla, primer nivel tamaño m
-	tabla = vector<vector<int>>(m);
-
-	cout << "Creando tabla de primer nivel" << endl;
 	while (true)
 	{
-		a = (rand() + rand() << 15) % p; // valor aleatorio entre [0..p − 1]
-		b = (rand() + rand() << 15) % p; // valor aleatorio entre [0..p − 1]
-
-		for (auto kmer : mapkmers)
-			// hash kmer e insertarlo en una tabla de 2 niveles auxiliar
-			tablaAux[h(kmer.first)].push_back(kmer.first);
-
+		a = rng() % p;				   // valor aleatorio entre [0..p − 1]
+		b = rng() % p;				   // valor aleatorio entre [0..p − 1]
+		vector<vector<int>> tabla1(m); // tabla, primer nivel tamaño m
+		for (int kmer : setKmers)
+			// hash k-mer e insertarlo en una tabla de 2 niveles auxiliar
+			tabla1[h(kmer)].push_back(kmer);
 		// Condicion de sumatoria de i = 0 hasta m-1 de ci^2 < 4n
-		int sum = 0;					// sumatoria de i = 0 hasta m-1 de ci^2
-		for (auto c : tablaAux)			// 0 hasta m-1
-			sum += c.size() * c.size(); // ci^2
-		if (sum < 4 * m)				// funcion hash buena
+		int c = 0;					  // sumatoria de i = 0 hasta m-1 de ci^2
+		for (vector<int> v : tabla1)  // 0 hasta m-1
+			c += v.size() * v.size(); // ci^2
+		if (c < cota)				  // funcion hash buena
+		{
+			tabla = tabla1;
 			break;
+		}
 		else // repetir y aumentar contador
-			rep4++;
+			rep++;
 	}
 
-	cout << "Creando tabla de segundo nivel" << endl;
 	for (int i = 0; i < m; i++)
 	{
-		porcentaje(i, m);
-		int c = tablaAux[i].size(), flag = 0;
-		mi = c * c; // mi = ci^2
+		mi = tabla[i].size() * tabla[i].size(); // mi = ci^2
 
-		while (c)
+		int count = 0;
+		while (mi)
 		{
-			ai = (rand() + rand() << 15) % p;
-			bi = (rand() + rand() << 15) % p;
-			tabla[i] = vector<int>(3 + mi); // 3 espacios para almacenar ai, bi, mi
+			bool colision = false;
+			ai = rng() % p;
+			bi = rng() % p;
+			vector<int> tabla2(3 + mi); // 3 espacios para almacenar ai, bi, mi
 
-			// recorrer tabla auxiliar de segundo nivel (del bucket i de la tabla de primer niveL)
-			// hacer hash a los elementos de esta tabla, a la tabla real
-			// el hash de primer nivel se hizo anteriormente, obteniendo i 
-			// ahora se debe hacer hash a los elementos en la tabla de segundo nivel
-			for (int knum : tablaAux[i]) 
-			{	
+			for (int kmer : tabla[i])
+			{
+				int pos = 3 + hi(kmer);
+				if (tabla2[pos] == 0)
+					tabla2[pos] = kmer;
 				// si ya existe un elemento (colision)
-				if (tabla[i][3 + hi(knum)])
+				else
 				{
-					flag = 1;
+					colision = true;
 					break;
 				}
-				else
-					tabla[i][3 + hi(knum)] = mapkmers[knum]; // deberiamos almacenar el kmer aqui o no??
-					// sgun tengo entendido, se almacena el elemento con el hash
-					// para dps usar search() y buscar la posicion de ese elemento
-					// asi queda con tiempo O(1)
 			}
 			// tripleta ai, bi, mi
-			if (!flag)
+			if (colision == false)
 			{
-				tabla[i][0] = mi;
-				tabla[i][1] = ai;
-				tabla[i][2] = bi;
+				tabla2[0] = mi;
+				tabla2[1] = ai;
+				tabla2[2] = bi;
+				tabla[i] = tabla2;
 				break;
 			}
-			else
-				flag = 0;
 		}
 	}
-
-	cout << "Tiempo requerido: ";
-	cout << duration_cast<seconds>(high_resolution_clock::now() - start).count() << "s" << endl
-		 << endl;
 }
 
-void HashPerfecto::porcentaje(int i, int j)
-{
-	if ((100.0 * i) / j >= pc)
-	{
-		cout << "[]";
-		pc += 10;
-	}
-	if (i == j - 1)
-	{
-		cout << "[]" << endl;
-		pc = 10;
-	}
-}
-/**
- * @brief Tabla, con cota 2n
- *
- */
-void HashPerfecto::tabla2n()
-{
-	vector<vector<int>> tablaAux(m);
-	uint ac = a, bc = b;
-
-	while (true)
-	{
-		int sum = 0;
-		a = (rand() + rand() << 15) % p;
-		b = (rand() + rand() << 15) % p;
-		for (auto kmer : mapkmers)
-			tablaAux[h(kmer.first)].push_back(kmer.first);
-		for (auto c : tablaAux)
-			sum += c.size() * c.size();
-		if (sum < 2 * m)
-		{
-			a = ac;
-			b = bc;
-			break;
-		}
-		else
-			rep2++;
-	}
-}
 /**
  * @brief Dado un x a buscar, se aplica h(x) y se obtiene el bucket y en tabla de primer nivel.
  * El bucket y tiene almacenado la tripleta (my, ay, by) asociada a hy,
  * luego se aplica hy(x) y se encuentra el elemento que se busca en la tabla de segundo nivel correspondiente.
  *
  * @param kmer x
- * @return numero de veces que se repite el elemento que se busca
+ * @return true, si se encuentra el k-mer
+ * @return false, en otro caso
  */
-int HashPerfecto::search(string kmer)
+bool HashPerfecto::search(string kmer)
 {
 	if (kmer.size() != k)
-		return -1;
-	int knum = kmerToInt(kmer); // x
-	int pos = h(knum);			// h(x)
+		return false;
 
-	if (tabla[pos].empty()) // colision
-		return 0;
+	int kmerc = codificar(kmer); // x
+	int pos1 = h(kmerc);		 // h(x)
 
-	mi = tabla[pos][0];
-	ai = tabla[pos][1];
-	bi = tabla[pos][2];
+	if (tabla[pos1].empty()) // colision
+		return false;
 
-	return tabla[pos][3 + hi(knum)];
+	mi = tabla[pos1][0];
+	ai = tabla[pos1][1];
+	bi = tabla[pos1][2];
+
+	int kmerTabla = tabla[pos1][3 + hi(kmerc)];
+	if (kmerTabla == kmerc)
+		return true;
+	else
+		return false;
+}
+
+/**
+ * @brief Retornar las repeticiones necesarias para encontrar a y b
+ *
+ * @return int, repeticiones
+ */
+int HashPerfecto::repeticiones()
+{
+	return rep;
+}
+
+/**
+ * @brief Funcion para calcular la memoria utilizada
+ *
+ * @return int
+ */
+int HashPerfecto::memoria()
+{
+	int mem = 0;
+	mem += sizeof(HashPerfecto);
+	mem += sizeof(int) * 10;
+	mem += sizeof(vector<vector<int>>);
+	for (vector<int> v : tabla)
+		mem += sizeof(vector<int>) + sizeof(int) * v.capacity();
+	return mem;
+};
+
+/**
+ * @brief Analisis experimental
+ *
+ * @return int
+ */
+int stats()
+{
+	int iter = 15, rep = 10, ts = 100, busq = 10000;
+	minstd_rand rng(time(NULL));
+
+	vector<int> repeticiones(iter), memoria(iter), tCrearTabla(iter), tBusqueda(iter), tam(iter);
+
+	for (int i = 0; i < iter; i++)
+	{
+		for (int j = 0; j < rep; j++)
+		{
+
+			string s;
+			tam[i] = ts * (i + 1);
+			for (int k = 0; k < ts * (i + 1); k++)
+			{
+				int r = rng() % 4;
+				if (r == 0)
+					s += 'A';
+				if (r == 1)
+					s += 'C';
+				if (r == 2)
+					s += 'T';
+				if (r == 3)
+					s += 'G';
+			}
+			auto start = high_resolution_clock::now();
+			HashPerfecto h = HashPerfecto(s);
+			auto finish = high_resolution_clock::now();
+			tCrearTabla[i] += duration_cast<microseconds>(finish - start).count();
+
+			string b;
+			for (int k = 0; k < 15; k++)
+			{
+				for (int m = 0; m < 15; m++)
+				{
+					int r = rng() % 4;
+					if (r == 0)
+						b += 'A';
+					if (r == 1)
+						b += 'C';
+					if (r == 2)
+						b += 'T';
+					if (r == 3)
+						b += 'G';
+				}
+			}
+			start = high_resolution_clock::now();
+			for (int k = 0; k < busq; k++)
+				h.search(b);
+			finish = high_resolution_clock::now();
+			tBusqueda[i] += duration_cast<nanoseconds>(finish - start).count();
+
+			repeticiones[i] += h.repeticiones();
+			memoria[i] += h.memoria();
+		}
+	}
+	cout << endl
+		 << "Tam" << endl;
+	for (auto a : tam)
+		cout << a << endl;
+
+	cout << endl
+		 << "Rep" << endl;
+	for (auto a : repeticiones)
+		cout << (float)a / rep << endl;
+
+	cout << endl
+		 << "Mem" << endl;
+	for (auto a : memoria)
+		cout << (float)a / rep << endl;
+
+	cout << endl
+		 << "T crear" << endl;
+	for (auto a : tCrearTabla)
+		cout << (float)a / rep << endl;
+
+	cout << endl
+		 << "T busqueda" << endl;
+	for (auto a : tBusqueda)
+		cout << (float)a / (rep * busq) << endl;
 }
 
 int main()
 {
-	string nombre;
-	cout << "1: GCF_000820745.1_Polynesia_massiliensis_MS3_genomic.fna" << endl;
-	cout << "2: t.txt" << endl;
-	cout << "Ingresar numero o nombre del archivo: ";
-	cin >> nombre;
+	cout << "1: Ingreso de archivo" << endl;
+	cout << "2: Ingreso manual de string" << endl;
+	int n;
+	cin >> n;
+	cout << endl;
 
-	if (nombre == "1")
-		nombre = "GCF_000820745.1_Polynesia_massiliensis_MS3_genomic.fna";
-	if (nombre == "2")
-		nombre = "t.txt";
-
-	ifstream archivo(nombre);
 	string genoma;
-	int copiar = 1;
+	if (n == 1)
+	{
+		string nombre;
+		string polynesia = "GCF_000820745.1_Polynesia_massiliensis_MS3_genomic.fna";
+		cout << "1: " << polynesia << endl;
+		cout << "2: t.txt" << endl;
+		cout << "Ingresar numero o nombre del archivo: ";
+		cin >> nombre;
+
+		if (nombre == "1")
+			nombre = polynesia;
+		if (nombre == "2")
+			nombre = "t.txt";
+
+		ifstream archivo(nombre);
+		int copiar = 1;
+		while (true)
+		{
+			string data;
+			archivo >> data;
+			if (data.empty())
+				break;
+
+			if (data[0] == '>')
+				copiar = 0;
+			if (copiar)
+				genoma += data;
+			if (data == "sequence")
+				copiar = 1;
+		}
+		archivo.close();
+	}
+	else
+	{
+		cout << "Ingresar string" << endl;
+		cin >> genoma;
+	}
+
+	HashPerfecto h = HashPerfecto(genoma);
+
+	cout << endl
+		 << "Ingresar 15-mer a buscar, 0 para salir" << endl;
 	while (true)
 	{
-		string data;
-		archivo >> data;
-		if (data.empty())
-			break;
-
-		if (data[0] == '>')
-			copiar = 0;
-		if (copiar)
-			genoma += data;
-		if (data == "sequence")
-			copiar = 1;
-	}
-
-	archivo.close();
-	HashPerfecto h = HashPerfecto(&genoma);
-
-	string kmer;
-	cout << "Ingresar 15-mer a buscar, 0 para salir" << endl;
-	while (kmer != "0")
-	{
+		string kmer;
 		cin >> kmer;
-		cout << "Cantidad: " << h.search(kmer) << endl;
+		if (kmer == "0")
+			break;
+		if (h.search(kmer))
+			cout << "Presente en el genoma" << endl;
+		else
+			cout << "No presente en el genoma" << endl;
 	}
 
-	cout << "Fin main()" << endl;
 	return 0;
 }
-
-/*
-procesar k-mers
-esta opcion me ahorra 3.5 segundos, pero es mas bastante mas larga
-
-string kmer = genoma.substr(0, k);
-mapkmers[ kmerToInt( genoma.substr(0, k) ) ]++;
-int knum = kmerToInt(kmer);
-
-for(int i=1; i<genoma.size()-(k-1); i++){
-	knum = knum >> 2;
-	if(genoma[i+k-1] == 'A') knum += 0 << 28;
-	else if(genoma[i+k-1] == 'C') knum += 1 << 28;
-	else if(genoma[i+k-1] == 'T') knum += 2 << 28;
-	else if(genoma[i+k-1] == 'G') knum += 3 << 28;
-	mapkmers[knum]++;
-}
-
-*/
