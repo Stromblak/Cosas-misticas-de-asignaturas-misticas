@@ -1,10 +1,5 @@
 El codigo se compila usando g++, no requiere ninguna opcion especial.
-/*
-En el .h se declara y en el .cpp se implementan
-Para compilar:
-	g++ -c *.cpp   //crea los objetos .o
-	g++ -o ejecutable *.o //linkea todos los .o en un ejecutable
-*/ <--------------------------Eso tengo para compilar y juntar
+$ g++ *.cpp -o
 La clase hashPerfecto recibe un string como parametro en su constructor, 
 el string debe contener solo los siguientes caracteres: A, C, T, G
 En caso contrario tirara una exepcion.
