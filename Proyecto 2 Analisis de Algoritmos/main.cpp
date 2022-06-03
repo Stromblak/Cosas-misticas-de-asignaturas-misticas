@@ -12,7 +12,7 @@ using namespace chrono;
  *
  * @return int
  */
-int stats()
+void stats()
 {
 	int iter = 15, rep = 10, ts = 100, busq = 10000;
 	minstd_rand rng(time(NULL));
