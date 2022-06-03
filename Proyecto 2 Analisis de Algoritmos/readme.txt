@@ -1,6 +1,10 @@
-La implementación consiste en la clase HashPerfecto que, creará la tabla hash. La clase cuenta con atributos y métodos para almacenar el genoma, dividirlo en k-mers, codificar esos mismos k-mers y al final almacenarlos en tabla, mediante hashing perfecto. Además existen funciones para el análisis experimental y el main para probar el código.
+La implementación consiste en la clase HashPerfecto que, creará la tabla hash. 
+La clase cuenta con atributos y métodos para almacenar el genoma, dividirlo en k-mers, 
+codificar esos mismos k-mers y al final almacenarlos en tabla, mediante hashing perfecto. 
+Además existen funciones para el análisis experimental y el main para probar el código.
 
-La clase HashPerfecto recibe un string como parámetro en su constructor, el string debe contener solo los siguientes caracteres: A, C, T, G
+La clase HashPerfecto recibe un string como parámetro en su constructor, 
+el string debe contener solo los siguientes caracteres: A, C, T, G
 En caso contrario tirará una excepción.
 
 - El código se compila usando g++, no requiere ninguna opción especial.
