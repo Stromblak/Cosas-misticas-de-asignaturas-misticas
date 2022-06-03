@@ -1,5 +1,5 @@
 El codigo se compila usando g++, no requiere ninguna opcion especial.
-$ g++ *.cpp -o
+$ g++ *.cpp -o nombre_del_ejecutable
 La clase hashPerfecto recibe un string como parametro en su constructor, 
 el string debe contener solo los siguientes caracteres: A, C, T, G
 En caso contrario tirara una exepcion.
