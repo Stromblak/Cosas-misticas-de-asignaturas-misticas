@@ -1,13 +1,4 @@
 #include "HashPerfecto.h"
-#include <iostream>
-#include <vector>
-#include <unordered_set>
-#include <chrono>
-#include <fstream>
-#include <random>
-
-using namespace std;
-using namespace chrono;
 
 /**
  * @brief Construct a new Hash Perfecto:: Hash Perfecto object

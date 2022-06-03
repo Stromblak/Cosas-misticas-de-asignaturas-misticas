@@ -1,7 +1,5 @@
 #include "HashPerfecto.h"
 #include <iostream>
-#include <vector>
-#include <unordered_set>
 #include <chrono>
 #include <fstream>
 #include <random>
