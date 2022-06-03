@@ -20,7 +20,7 @@ private:
 	int a, b, m, ai, bi, mi, p;										 // a y b son valores aleatorios, m es el numero de bucekts y p es un numero primo
 	int h(int kmerc);												 // hash para la tabla de primer nivel
 	int hi(int kmerc);												 // hash para la tabla de segundo nivel
-	int nextPrime(int n);											 // calcular proximo primo
+	int nextPrime(int n);											 // calcular siguiente numero primo a n
 	int codificar(string kmer);										 // transformar el k-mer de string a int
 	int procesarkmers(string &genoma, unordered_set<int> &setKmers); // transformar el genoma a k-mers y codificarlos
 	void crearTabla(unordered_set<int> &setKmers);					 // crear la tabla y almacenar los k-mers mediante hashing
