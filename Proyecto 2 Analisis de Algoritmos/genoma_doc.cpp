@@ -140,10 +140,10 @@ int HashPerfecto::codificar(string kmer)
 }
 
 /**
- * @brief Mapear todos los 15-mers
+ * @brief Conseguir todos los 15-mers
  * Se elige un substring de largo 15 del string genoma para el 15-mer, y luego se llama a la funcion codificar para retornar un int.
  * Despues, se almacena el 15-mer (int) en el set.
- * Se utiliza la funcion substr(i, k), ya que el 15-mer empiza en la posicion i, tiene un largo k = 15
+ * Se utiliza la funcion substr(i, k), ya que el 15-mer empieza en la posicion i, tiene un largo k = 15
  * @param genoma el genoma (string)
  * @param setKmers set que almacenara los 15-mers
  * @return int, numero de k-mers no distintos, tamano del set
@@ -157,8 +157,15 @@ int HashPerfecto::procesarkmers(string &genoma, unordered_set<int> &setKmers)
 
 /**
  * @brief Creacion de las 2 tablas
- * Tabla de primer nivel: Para determinar funcion hash, h, de primer nivel.
- * Elegir m = n, p > |S|, y a y b aleatoriamente en un rango [0..p − 1].
+ * Tabla de primer nivel:
+ * Creamos una tabla auxiliar tabla1 de tamaño m, para almacenar los k-mers con el hash h.
+ * Esa misma tabla, se va convertir en la tabla real, pero le falta el hash del segundo nivel.
+ * Tabla de segundo nivel:
+ * Para cada bucket de la tabla de primer nivel, creamos un vector temporal tabla2,
+ * que almacenara los elementos de ese bucket.
+ * Almacenamos los elementos de ese bucket mediante el hash hi en la tabla2,
+ * y al terminar de almacenarlos todos, la tabla2 se convierte en ese bucket, que es lo que queriamos.
+ * Repetir con cada bucket de la tabla de primer nivel.
  * @param setKmers set que contiene los k-mers
  */
 void HashPerfecto::crearTabla(unordered_set<int> &setKmers)
@@ -190,7 +197,6 @@ void HashPerfecto::crearTabla(unordered_set<int> &setKmers)
 	{
 		mi = tabla[i].size() * tabla[i].size(); // mi = ci^2
 
-		int count = 0;
 		while (mi)
 		{
 			bool colision = false;
@@ -214,12 +220,13 @@ void HashPerfecto::crearTabla(unordered_set<int> &setKmers)
 					break;
 				}
 			}
-			// tripleta ai, bi, mi
 			if (!colision)
 			{
+				// tripleta ai, bi, mi
 				tabla2[0] = mi;
 				tabla2[1] = ai;
 				tabla2[2] = bi;
+				// la nueva tabla se convertira en la tabla real de ese bucket
 				tabla[i] = tabla2;
 				break;
 			}
