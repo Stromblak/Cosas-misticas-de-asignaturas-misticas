@@ -21,14 +21,14 @@ private:
 	int h(int kmerc);												 // hash para la tabla de primer nivel
 	int hi(int kmerc);												 // hash para la tabla de segundo nivel
 	int nextPrime(int n);											 // calcular siguiente numero primo a n
-	int codificar(string kmer);										 // transformar el k-mer de string a int
+	int codificar(string kmer);										 // codificar el k-mer de string a int
 	int procesarkmers(string &genoma, unordered_set<int> &setKmers); // transformar el genoma a k-mers y codificarlos
 	void crearTabla(unordered_set<int> &setKmers);					 // crear la tabla y almacenar los k-mers mediante hashing
 
 public:
 	HashPerfecto(string &genoma); // constructor
 	bool search(string kmer);	  // buscar si existe el k-mer
-	int repeticiones();			  // retornar el numero de repeticiones (rep)
+	int repeticiones();			  // retornar el numero de repeticiones de busqueda de a y b (rep)
 	int memoria();				  // para analisis experimental de la memoria
 };
 
@@ -62,7 +62,7 @@ HashPerfecto::HashPerfecto(string &genoma)
  * h(k) = ((a × k + b)mod p)mod m)
 
  * @param kmerc (int)kmer
- * @return bucket, primer nivel
+ * @return posicion tabla de primer nivel
  */
 int HashPerfecto::h(int kmerc)
 {
@@ -73,7 +73,7 @@ int HashPerfecto::h(int kmerc)
  * @brief Hashing tabla de segundo nivel
  *
  * @param kmerc (int)kmer
- * @return bucket, segundo nivel, donde se almacenara el kmer
+ * @return posicion tabla de segundo nivel, donde se almacenara el kmer
  */
 int HashPerfecto::hi(int kmerc)
 {
@@ -81,7 +81,7 @@ int HashPerfecto::hi(int kmerc)
 }
 
 /**
- * @brief Encontrar el proximo primo?, dado un n
+ * @brief Encontrar el siguiente numero primo despues de n
  *
  * @param n valor al cual se desea buscar su proximo primo
  * @return int, proximo primo
@@ -141,12 +141,12 @@ int HashPerfecto::codificar(string kmer)
 
 /**
  * @brief Mapear todos los 15-mers
- * Se elige un pedazo de largo 15 del string genoma para el 15-mer, y luego se transforma a int.
+ * Se elige un substring de largo 15 del string genoma para el 15-mer, y luego se llama a la funcion codificar para retornar un int.
  * Despues, se almacena el 15-mer (int) en el set.
  * Se utiliza la funcion substr(i, k), ya que el 15-mer empiza en la posicion i, tiene un largo k = 15
  * @param genoma el genoma (string)
  * @param setKmers set que almacenara los 15-mers
- * @return int, numero de k-mers no distintos
+ * @return int, numero de k-mers no distintos, tamano del set
  */
 int HashPerfecto::procesarkmers(string &genoma, unordered_set<int> &setKmers)
 {
@@ -169,9 +169,9 @@ void HashPerfecto::crearTabla(unordered_set<int> &setKmers)
 	{
 		a = rng() % p;				   // valor aleatorio entre [0..p − 1]
 		b = rng() % p;				   // valor aleatorio entre [0..p − 1]
-		vector<vector<int>> tabla1(m); // tabla, primer nivel tamaño m
+		vector<vector<int>> tabla1(m); // tabla de primer nivel, tamaño m
 		for (int kmer : setKmers)
-			// hash k-mer e insertarlo en una tabla de 2 niveles auxiliar
+			// hash k-mer e insertarlo en su tabla de segundo nivel respectiva, tabla de segundo nivel auxiliar
 			tabla1[h(kmer)].push_back(kmer);
 		// Condicion de sumatoria de i = 0 hasta m-1 de ci^2 < 4n
 		int c = 0;					  // sumatoria de i = 0 hasta m-1 de ci^2
@@ -196,12 +196,12 @@ void HashPerfecto::crearTabla(unordered_set<int> &setKmers)
 			bool colision = false;
 			ai = rng() % p;
 			bi = rng() % p;
-			vector<int> tabla2(3 + mi); // 3 espacios para almacenar ai, bi, mi
+			vector<int> tabla2(3 + mi); // tabla de segundo nivel, 3 espacios extras para almacenar ai, bi, mi
 
 			// recorrer todos los elementos de un bucket de la tabla de primer nivel,
 			// ya que los elementos solo fueron insertados, sin hash
-			// hacerles hash a una tabla auxiliar
-			// la tabla auxiliar se convertira en la tabla real de ese bucket
+			// hacerles hash a la tabla de segundo nivel recien creada
+			// la nueva tabla se convertira en la tabla real de ese bucket
 			for (int kmer : tabla[i])
 			{
 				int pos = 3 + hi(kmer); // hash
@@ -228,9 +228,9 @@ void HashPerfecto::crearTabla(unordered_set<int> &setKmers)
 }
 
 /**
- * @brief Dado un x a buscar, se aplica h(x) y se obtiene el bucket y en tabla de primer nivel.
- * El bucket y tiene almacenado la tripleta (my, ay, by) asociada a hy,
- * luego se aplica hy(x) y se encuentra el elemento que se busca en la tabla de segundo nivel correspondiente.
+ * @brief Dado un x a buscar, se aplica h(x) y se obtiene la tabla de segundo nivel.
+ * La tabla de segundo nivel tiene almacenado la tripleta (my, ay, by) asociada a hi,
+ * luego se aplica hi(x) y se encuentra el elemento que se busca en la tabla de segundo nivel correspondiente.
  *
  * @param kmer x
  * @return true, si se encuentra el k-mer
