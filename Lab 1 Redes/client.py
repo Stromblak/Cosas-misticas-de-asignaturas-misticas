@@ -1,16 +1,16 @@
-# copy paste de https://realpython.com/python-sockets/
 import socket
 
-HOST = "127.0.0.1"  # The server's hostname or IP address
-PORT = 65432  # The port used by the server
-# le agregue pa leer archivos nomas
-filename = input("Nombre del archivo: ")
+HOST = socket.gethostname()
+PORT = 80
+
+# filename = input("Nombre del archivo: ")
+filename = "data.txt"
+
 with open(filename, "r") as f:
-    contents = f.read()
+	contents = f.read()
+	f.close()
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.connect((HOST, PORT))
-    s.sendall(contents.encode())
-    data = s.recv(1024)
-
-print(f"Received {data!r}")
+	s.connect((HOST, PORT))
+	s.sendall(contents.encode())
+	s.close()						# termina la conexion

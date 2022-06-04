@@ -1,17 +1,27 @@
-# copy paste de https://realpython.com/python-sockets/
 import socket
 
-HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
-PORT = 65432  # Port to listen on (non-privileged ports are > 1023)
+HOST = socket.gethostname()
+PORT = 80
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.bind((HOST, PORT))
-    s.listen()
-    conn, addr = s.accept()
-    with conn:
-        print(f"Connected by {addr}")
-        while True:
-            data = conn.recv(1024)
-            if not data:
-                break
-            conn.sendall(data)
+	s.bind((HOST, PORT))
+	s.listen()
+
+	while True:
+		clientsocket, address = s.accept()
+		
+		with clientsocket:
+			print(f"Conexion entrante: {address}")
+
+			data = bytes()
+			while True:
+				buffer = clientsocket.recv(1024)
+				if not buffer:
+					break
+				data += buffer
+			
+			with open( "recv.txt", "w") as r:
+				r.write(data.decode())
+				r.close()
+			
+			print(f"Conexion finalizada: {address}")
