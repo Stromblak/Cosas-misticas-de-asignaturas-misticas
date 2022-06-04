@@ -28,7 +28,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             data = []
             tamActual = 0
             while True:
-                buffer = c.recv(filesize)
+                buffer = c.recv(1024)
                 if not buffer:
                     break
                 data.append(buffer)
