@@ -18,7 +18,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     print("Conexion exitosa!")
     # Enviar mensaje
     print(
-        f"Enviando el archivo {filename} con tamaño de {filesize} bytes/{filesize / (1024 * 1024)} MB.")
+        f"Enviando el archivo {filename} con tamaño de {filesize} bytes/{round(filesize / (1024 * 1024),3)} MB.")
     s.sendall(filename.encode())
     s.recv(1024)
     s.sendall(str(filesize).encode())

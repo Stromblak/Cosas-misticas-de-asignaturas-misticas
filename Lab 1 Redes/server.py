@@ -37,8 +37,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
                 # la suma total de esto no da el tamano del archivo
                 tamActual += len(buffer)
-                print(tamActual, '/', filesize)
-
+                #print(tamActual, '/', filesize)
+                print(f"{round(100*tamActual/filesize,2)}/100% completado")
+            print("100%/100% completado. Archivo recibido")
             with open("recv" + filename, "w") as r:
                 r.write(b''.join(data).decode())
 
