@@ -23,7 +23,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 					break
 				data += buffer
 			
-			with open(filename, "w") as r:
+			with open("recv" + filename, "w") as r:
 				r.write(data.decode())
 			
 			print(f"Conexion finalizada: {address}")
