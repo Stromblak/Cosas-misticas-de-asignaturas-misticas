@@ -1,46 +1,43 @@
 import socket
 
-HOST = socket.gethostname()
-PORT = 80
 
-# Crear socket
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    # Bind socket, con la direccion y el puerto
-    s.bind((HOST, PORT))
-    # Listen
-    s.listen()
+def server(host, port):
+    print("Servidor inicializado")
 
-    while True:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        # Bind socket, con la direccion y el puerto
+        s.bind((host, port))
+        # Listen
         print("Esperando la conexion")
-        clientsocket, address = s.accept()
+        s.listen()
 
-        with clientsocket as c:
-            print(f"Conexion entrante: {address}")
+        while True:
+            clientsocket, address = s.accept()
 
-            # me daba error el split
-            filename = c.recv(1024).decode()
-            print(f"Nombre del archivo recibido: {filename}")
-            c.send(b'aux')
-            filesize = int(c.recv(1024).decode())
-            print(f"Tamaño del archivo recibido: {filesize}")
-            c.send(b'aux')
+            with clientsocket as c:
+                print(f"Conexion entrante: {address}")
 
-            data = []
-            tamActual = 0
-            while True:
-                buffer = c.recv(1024)
-                if not buffer:
-                    break
-                data.append(buffer)
-                # como es inmutable el tipo byte, es cuadratico hacer data += buffer
-                # por crear un nuevo data, haciendo el join(data) es lineal
+                filename, size = c.recv(1024).decode().split()
+                size = int(size)
+                print(
+                    f"Nombre y tamaño del archivo recibido: {filename}, {size} bytes")
+                data = []
+                tamActual = 0
+                while True:
+                    buffer = c.recv(1024)
+                    if not buffer:
+                        break
+                    data.append(buffer)
+                    # como es inmutable el tipo byte, es cuadratico hacer data += buffer
+                    # por crear un nuevo data, haciendo el join(data) es lineal
 
-                # la suma total de esto no da el tamano del archivo
-                tamActual += len(buffer)
-                #print(tamActual, '/', filesize)
-                print(f"{round(100*tamActual/filesize,2)}/100% completado")
-            print("100%/100% completado. Archivo recibido")
-            with open("recv" + filename, "w") as r:
-                r.write(b''.join(data).decode())
+                    # la suma total de esto no da el tamano del archivo
+                    tamActual += len(buffer)
+                    #print(tamActual, '/', size)
+                    print(f"{round(100*tamActual/size,2)}/100% completado")
+                print("100%/100% completado. Archivo recibido")
 
-            print(f"Conexion finalizada: {address}")
+                with open("recv" + filename, "w") as r:
+                    r.write(b''.join(data).decode())
+
+                print(f"Conexion finalizada: {address}\n")
