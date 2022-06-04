@@ -1,25 +1,28 @@
 import socket
 import os
 
-def client(host, port):
-	print("Cliente inicializado")
+HOST = socket.gethostname()
+PORT = 80  
 
-	# filename = input("Nombre del archivo: ")
-	filename = "data.txt"
-	size = os.path.getsize(filename)
+# Archivo, nombre y tamaño
+# filename = input("Nombre del archivo: ")
+filename = "data.txt"
+filesize = os.path.getsize(filename)
 
-	stats = str(filename) + ' ' + str(size)
+with open(filename, "r") as f:
+    contents = f.read()
 
-	with open(filename, "r") as f:
-		contents = f.read()
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    print("Estableciendo la conexion...")
+    s.connect((HOST, PORT))
+    print("Conexion exitosa!")
+    # Enviar mensaje
+    print(
+        f"Enviando el archivo {filename} con tamaño de {filesize} bytes/{filesize / (1024 * 1024)} MB.")
+    s.sendall(filename.encode())
+    s.recv(1024)
+    s.sendall(str(filesize).encode())
+    s.recv(1024)
+    s.sendall(contents.encode())
+    print("Mensaje enviado con exito.")
 
-	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-		s.connect((host, port))
-		
-		s.sendall(stats.encode())	
-		# esto no puede estar justo antes del otro send porque se juntan los mensajes
-		# ni idea por que
-
-		# Enviar mensaje
-		print("Enviando el archivo", filename, "con tamaño", size)
-		s.sendall(contents.encode())
