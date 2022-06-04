@@ -16,10 +16,8 @@ with open(filename, "r") as f:
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 	s.connect((HOST, PORT))
+	
 	# Enviar mensaje
-
-	s.sendall(stats.encode())
-
 	print("Enviando el archivo", filename, "con tamaño", size)
-
+	s.sendall(stats.encode())
 	s.sendall(contents.encode())
