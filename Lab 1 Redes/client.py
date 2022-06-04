@@ -1,10 +1,15 @@
 import socket
+import os
+
 
 HOST = socket.gethostname()
 PORT = 80
 
 # filename = input("Nombre del archivo: ")
 filename = "data.txt"
+ext = os.path.splitext(filename)[1]
+size = os.path.getsize(filename)
+
 with open(filename, "r") as f:
     contents = f.read()
 
