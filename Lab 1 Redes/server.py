@@ -8,8 +8,8 @@ def server(host, port):
         # Bind socket, con la direccion y el puerto
         s.bind((host, port))
         # Listen
-        s.listen()
         print("Esperando la conexion")
+        s.listen()
 
         while True:
             clientsocket, address = s.accept()
@@ -19,9 +19,9 @@ def server(host, port):
 
                 filename, size, = c.recv(1024).decode().split()
                 size = int(size)
+                print(
+                    f"Recibiendo el archivo {filename} con tamaño de {size} bytes ({round(size / (1024 * 1024),3)} MB).")
 
-                print(f"Nombre y tamaño del archivo recibido: {filename}, {size} bytes")
-				
                 data = []
                 tamActual = 0
                 while True:
