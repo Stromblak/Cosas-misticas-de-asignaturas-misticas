@@ -29,12 +29,10 @@ def server(host, port):
                     if not buffer:
                         break
                     data.append(buffer)
-                    # como es inmutable el tipo byte, es cuadratico hacer data += buffer
-                    # por crear un nuevo data, haciendo el join(data) es lineal
-
-                    # la suma total de esto no da el tamano del archivo
                     tamActual += len(buffer)
                     print(f"{round(100*tamActual/size,2)}/100% completado")
+                    # forma fea de ver el progreso
+                    c.sendall(str(tamActual).encode())
                 print("100%/100% completado. Archivo recibido")
 
                 with open("recv" + filename, "w") as r:
