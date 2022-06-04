@@ -1,4 +1,5 @@
 import socket
+import os
 
 HOST = socket.gethostname()
 PORT = 80
@@ -9,7 +10,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
 	while True:
 		clientsocket, address = s.accept()
-		
+		stats = clientsocket.recv(1024).decode()
+		filename, size = stats.split()
+
 		with clientsocket:
 			print(f"Conexion entrante: {address}")
 
@@ -20,8 +23,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 					break
 				data += buffer
 			
-			with open( "recv.txt", "w") as r:
+			with open(filename, "w") as r:
 				r.write(data.decode())
-				r.close()
 			
 			print(f"Conexion finalizada: {address}")
