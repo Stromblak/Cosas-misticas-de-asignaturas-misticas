@@ -25,7 +25,8 @@ def server(host, port):
 
 				print(f"Recibiendo el archivo {filename} de tamaño {filesize} MB.")
 
-				recibido = len(data[0])
+				#hay un +5 por alguna razon
+				recibido = -5 + len(data[0])
 				while True:
 					buffer = c.recv(1024)
 					if not buffer:
