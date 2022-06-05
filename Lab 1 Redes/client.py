@@ -25,7 +25,7 @@ def client(host, port, filename):
 
 		enviado = 0
 		for d in data:
-			# envio los pedacitos, no estoy seguro del len pa ver lo enviado si
+			# envio los pedacitos
 			s.sendall(d.encode())
 			enviado += len(d)
 			print(f"Progreso: {round(100*enviado/total,2)}%")
