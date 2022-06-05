@@ -33,7 +33,6 @@ def server(host, port):
 					data.append(buffer)
 					recibido += len(buffer)
 					print(f"Progreso: {round(100*recibido/total,2)}%")
-				print("Progreso: 100%")
 
 				with open("recv" + filename, "w") as r:
 					r.write(b''.join(data).decode())
