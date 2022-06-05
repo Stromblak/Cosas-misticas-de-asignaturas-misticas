@@ -4,12 +4,11 @@ import os
 def client(host, port, filename):
 	print("Cliente inicializado")
 
-	filesize = os.path.getsize(filename)
-	stats = str(filename) + '|' + str(filesize) + '|'
-
 	with open(filename, "r") as f:
 		contenido = stats + f.read()
 
+	filesize = os.path.getsize(filename)
+	stats = str(filename) + '|' + str(filesize) + '|'
 	total = len(contenido)
 
 	# separo el contenido en pedacitos de tamano 1024
