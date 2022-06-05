@@ -19,11 +19,10 @@ def server(host, port):
 				print(f"Conexion entrante: {address}")
 
 				data = c.recv(50).split(b"|", 3)
-				filename = data[0].decode()
-				filesize = float(data[1].decode())
-				total = int(data[2].decode())
-				data = [ data[3] ]
-				
+				filename = data.pop(0).decode()
+				filesize = float( data.pop(0).decode() )
+				total = int( data.pop(0).decode() )
+
 				print(f"Recibiendo el archivo {filename} de tamaño {filesize} MB.")
 
 				recibido = len(data[0])
