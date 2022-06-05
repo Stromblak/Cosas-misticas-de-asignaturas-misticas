@@ -4,11 +4,13 @@ import os
 def client(host, port, filename):
 	print("Cliente inicializado")
 
-	size = os.path.getsize(filename)
-	stats = str(filename) + '|' + str(size) + '|'
+	filesize = os.path.getsize(filename)
+	stats = str(filename) + '|' + str(filesize) + '|'
 
 	with open(filename, "r") as f:
 		contenido = stats + f.read()
+
+	total = len(contenido)
 
 	# separo el contenido en pedacitos de tamano 1024
 	data = [contenido[i:i+1024] for i in range(0, len(contenido), 1024)]
@@ -19,13 +21,12 @@ def client(host, port, filename):
 		print("Conexion exitosa!")
 
 		# Enviar mensaje
-		mb = round(size / (1024 * 1024), 3)
+		mb = round(filesize / (1024 * 1024), 3)
 		print(f"Enviando el archivo {filename} de tamaño {mb} MB.")
 
 		enviado = 0
 		for d in data:
-			# envio los pedacitos, no estoy seguro del len pa ver lo enviado si si
+			# envio los pedacitos, no estoy seguro del len pa ver lo enviado si
 			s.sendall(d.encode())
 			enviado += len(d)
-			print(f"Progreso: {round(100*enviado/size,2)}%")
-		print(f"Progreso: 100%")
+			print(f"Progreso: {round(100*enviado/total,2)}%")
