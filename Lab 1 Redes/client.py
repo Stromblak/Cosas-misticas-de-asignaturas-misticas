@@ -16,7 +16,7 @@ def client(host, port, filename):
 	data = [contenido[i:i+1024] for i in range(0, len(contenido), 1024)]
 
 	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-		print("Estableciendo la conexion...")
+		print("Estableciendo la conexion... ", end = '')
 		s.connect((host, port))
 		print("Conexion exitosa!")
 

@@ -10,7 +10,7 @@ def server(host, port):
 		s.bind((host, port))
 		# Listen
 		s.listen()
-		print("Esperando la conexion")
+		print("Esperando conexiones")
 
 		while True:
 			clientsocket, address = s.accept()
