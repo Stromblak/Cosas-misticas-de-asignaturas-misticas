@@ -1,38 +1,31 @@
 import socket
 import os
-import time
-
 
 def client(host, port, filename):
-    print("Cliente inicializado")
+	print("Cliente inicializado")
 
-    size = os.path.getsize(filename)
-    stats = str(filename) + ' ' + str(size) + ' '
+	size = os.path.getsize(filename)
+	stats = str(filename) + '|' + str(size) + '|'
 
-    with open(filename, "r") as f:
-        contents = f.read()
+	with open(filename, "r") as f:
+		contenido = stats + f.read()
 
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        print("Estableciendo la conexion...")
-        s.connect((host, port))
-        print("Conexion exitosa!")
+	# separo el contenido en pedacitos de tamano 1024
+	data = [contenido[i:i+1024] for i in range(0, len(contenido), 1024)]
 
-        s.sendall(stats.encode())
-        time.sleep(1)
+	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+		print("Estableciendo la conexion...")
+		s.connect((host, port))
+		print("Conexion exitosa!")
 
-        # Enviar mensaje
-        print(
-            f"Enviando el archivo {filename} con tamaño de {size} bytes ({round(size / (1024 * 1024),3)} MB).")
-        s.sendall(contents.encode())
+		# Enviar mensaje
+		mb = round(size / (1024 * 1024), 3)
+		print(f"Enviando el archivo {filename} de tamaño {mb} MB.")
 
-        # forma fea de ver el progreso
-        while True:
-            buffer = s.recv(1024)
-            if not buffer:
-                break
-            tamActual = int(buffer.decode())
-            print(f"{round(100*tamActual/size,2)}/100% completado")
-            if round(100*tamActual/size,2) > 95:
-                break
-
-        print("100%/100% completado. Archivo enviado con exito.")
+		enviado = 0
+		for d in data:
+			# envio los pedacitos, no estoy seguro del len pa ver lo enviado si si
+			s.sendall(d.encode())
+			enviado += len(d)
+			print(f"Progreso: {round(100*enviado/size,2)}%")
+		print(f"Progreso: 100%")
