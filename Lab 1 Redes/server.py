@@ -1,6 +1,6 @@
 import socket
 #	podi usar tabs en vez de espacios o me cambio yo?
-#	porque me anda webeando esta cosa dsadas
+#	porque me anda webeando esta cosa con la indentacion dsadasdsa
 
 def server(host, port):
 	print("Servidor inicializado")
@@ -18,15 +18,13 @@ def server(host, port):
 			with clientsocket as c:
 				print(f"Conexion entrante: {address}")
 
-				data = c.recv(50).split(b"|", 2)
+				data = c.recv(50).split(b"|", 3)
 				filename = data[0].decode()
-				size = int(data[1].decode())
-				data.pop(0)
-				data.pop(0)
-
-
-				mb = round(size / (1024 * 1024), 3)
-				print(f"Recibiendo el archivo {filename} de tamaño {mb} MB.")
+				filesize = float(data[1].decode())
+				total = int(data[2].decode())
+				data = [ data[3] ]
+				
+				print(f"Recibiendo el archivo {filename} de tamaño {filesize} MB.")
 
 				recibido = len(data[0])
 				while True:
@@ -35,7 +33,7 @@ def server(host, port):
 						break
 					data.append(buffer)
 					recibido += len(buffer)
-					print(f"Progreso: {round(100*recibido/size,2)}%")
+					print(f"Progreso: {round(100*recibido/total,2)}%")
 				print("Progreso: 100%")
 
 				with open("recv" + filename, "w") as r:
