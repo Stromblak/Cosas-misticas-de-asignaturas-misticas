@@ -18,7 +18,7 @@ def server(host, port):
 			with clientsocket as c:
 				print(f"Conexion entrante: {address}")
 
-				data = c.recv(50).split(b"|", 3)
+				data = c.recv(50).split(b" ", 3)
 				filename = data.pop(0).decode()
 				filesize = float( data.pop(0).decode() )
 				total = int( data.pop(0).decode() )

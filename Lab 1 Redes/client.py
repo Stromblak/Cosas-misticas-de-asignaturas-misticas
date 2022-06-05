@@ -7,9 +7,9 @@ def client(host, port, filename):
 	with open(filename, "r") as f:
 		contenido = f.read()
 
-	filesize = round(os.path.getsize(filename) / (1024 * 1024), 3)
 	total = len(contenido)
-	stats = str(filename) + '|' + str(filesize) + '|' + str(total) + '|'
+	filesize = round(os.path.getsize(filename) / (1024 * 1024), 3)
+	stats = str(filename) + ' ' + str(filesize) + ' ' + str(total) + ' '
 	contenido = stats + contenido
 
 	# separo el contenido en pedacitos de tamano 1024
