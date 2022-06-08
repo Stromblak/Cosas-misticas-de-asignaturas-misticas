@@ -27,7 +27,7 @@ def server(host, port):
 
 				#hay un +5 por alguna razon en .txt
 				# en .bin no es afectado
-				recibido = -5 + len(data[0])
+				recibido = len(data[0])
 				while True:
 					buffer = c.recv(1024)
 					if not buffer:
