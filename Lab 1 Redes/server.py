@@ -33,7 +33,10 @@ def server(host, port):
 					if not buffer:
 						break
 					data.append(buffer)
-					recibido += len(buffer)
+					
+					# solucion challa para arreglar el +5
+					recibido += len(buffer.decode())
+					
 					print(f"Progreso: {round(100*recibido/total,2)}%")
 
 				with open("recv" + filename, "w") as r:
