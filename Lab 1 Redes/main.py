@@ -10,10 +10,10 @@ print("2: Cliente")
 modo = int(input())
 
 if modo == 1:
-	server.server(HOST, PORT)
+	server.server(HOST, PORT, 2)
 elif modo == 2:
 	# input
-	client.client(HOST, PORT, "data.txt")
+	client.client(HOST, PORT, "data.txt", 2)
 
 # esto lo hice porque lei que era un solo programa, y luego me di cuenta que decia
 # que se podia hacer un ejecutable junto o separado xd

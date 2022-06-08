@@ -1,8 +1,10 @@
 import socket
+import encriptacion as enc
+
 #	podi usar tabs en vez de espacios o me cambio yo?
 #	porque me anda webeando esta cosa con la indentacion dsadasdsa
 
-def server(host, port):
+def server(host, port, modo):
 	print("Servidor inicializado")
 
 	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -18,28 +20,32 @@ def server(host, port):
 			with clientsocket as c:
 				print(f"Conexion entrante: {address}")
 
-				data = c.recv(50).split(b"|", 3)
-				filename = data.pop(0).decode()
-				filesize = float( data.pop(0).decode() )
-				total = int( data.pop(0).decode() )
+				if modo == 1:
+					1
+				if modo == 2:
+					data = enc.decrypt( c.recv(512) ).split("|", 3)
+
+				filename = data.pop(0)
+				filesize = float( data.pop(0))
+				total = int( data.pop(0))
 
 				print(f"Recibiendo el archivo {filename} de tamaño {filesize} MB.")
-
-				#hay un +5 por alguna razon en .txt
-				# en .bin no es afectado
 				recibido = len(data[0])
 				while True:
-					buffer = c.recv(1024)
+					buffer = c.recv(512)
 					if not buffer:
 						break
-					data.append(buffer)
 					
-					# solucion challa para arreglar el +5
-					recibido += len(buffer.decode())
-					
+					if modo == 1:
+						1
+					if modo == 2:
+						bufferDec = enc.decrypt( buffer )
+						data.append(bufferDec)
+						recibido += len(bufferDec)
+
 					print(f"Progreso: {round(100*recibido/total,2)}%")
 
 				with open("recv" + filename, "w") as r:
-					r.write(b''.join(data).decode())
+					r.write(''.join(data))
 
 				print(f"Conexion finalizada\n")
