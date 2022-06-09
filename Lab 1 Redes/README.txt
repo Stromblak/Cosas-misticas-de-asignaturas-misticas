@@ -8,20 +8,20 @@ Luego apareceran 2 opciones:
 	2: Cliente
 
 Debe elegir una de las 2 opciones escribiendo en el teclado.
-Si elige cliente, debera escribir el nombre del archivo con su extension,
-por ejemplo: data.txt
 
 Luego para cliente y servidor, apareceran 3 opciones
 	
-	0: Sin cifrado
-	1: Cifrado Simetrico
-	2: Cifrado Asimetrico
+	0: Sin encriptacion
+	1: Encriptacion simetrica
+	2: Encriptacion asimetrica
 
-Donde cada mensaje representa lo que dice (sin cifrado no cifrara,
-cifrado asimetrico cifrara con cifrado asimetrico, etc.). Debe elegir
+Donde cada mensaje representa lo que dice (Sin encriptacion no cifrara,
+Encriptacion simetricacifrara con cifrado asimetrico, etc.). Debe elegir
 una de las opciones escribiendo en el teclado.
 
-Despues, se ejecutara el programa (cliente o servidor).
+Despues, se ejecutara el programa si escogio servidor. 
+Si eligio cliente, debe ingresar el nombre del archivo a enviar,
+con su extension, por ejemplo: data.txt
 
 Cosas a tener en cuenta para que funcione bien el programa:
 
