@@ -35,7 +35,7 @@ def client(host, port, cifrado, filename):
         print(f"Codificando archivo: {round(100*i/len(contenido),2)}%")
         total += len(dataEnc)
         data.append(dataEnc)
-    print("Codificando archivo: 100%\n")
+    print("Codificando archivo: 100.00%\n")
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         print("Estableciendo la conexion... ", end='')
