@@ -3,6 +3,7 @@
 
 import rsa
 import os
+import hashlib
 from Crypto.Cipher import AES
 
 # RSA
@@ -40,15 +41,15 @@ def decrypt_asim(ciphertext):
 
 
 # AES
-clave = "????"
 iv = "???"
 
-def encrypt_sim(message):
-	obj = AES.new('This is a key123'.encode(), AES.MODE_CFB, 'This is an IV456'.encode())
+
+def encrypt_sim(message, key):
+	obj = AES.new(hashlib.sha256(key.encode()).digest(), AES.MODE_CFB, 'This is an IV456'.encode())
 	ciphertext = obj.encrypt(message.encode())
 	return ciphertext
 
-def decrypt_sim(ciphertext):
-	obj2 = AES.new('This is a key123'.encode(), AES.MODE_CFB, 'This is an IV456'.encode())
+def decrypt_sim(ciphertext,key):
+	obj2 = AES.new(hashlib.sha256(key.encode()).digest(), AES.MODE_CFB, 'This is an IV456'.encode())
 	message = obj2.decrypt(ciphertext).decode()
 	return message
