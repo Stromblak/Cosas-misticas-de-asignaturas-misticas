@@ -33,6 +33,7 @@ def server(host, port, modo):
                             data = enc.decrypt_sim(c.recv(512), key).split("|", 3)
                         except:
                             print(f"Clave incorrecta, finalizando el programa.")
+                            print("Cerrando servidor")
                             return
                     if modo == 2:
                         data = enc.decrypt_asim(c.recv(512)).split("|", 3)
