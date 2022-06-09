@@ -42,8 +42,8 @@ def decrypt_asim(ciphertext):
 
 # AES
 iv = "???"
-
-
+# lo saque de un codigo el hashlib.sha256(key.encode()).digest()
+# https://github.com/abhishekdeokar/sockets-with-encryption/blob/master/tcpServer.py
 def encrypt_sim(message, key):
 	obj = AES.new(hashlib.sha256(key.encode()).digest(), AES.MODE_CFB, 'This is an IV456'.encode())
 	ciphertext = obj.encrypt(message.encode())
