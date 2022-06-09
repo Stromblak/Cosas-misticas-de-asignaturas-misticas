@@ -1,7 +1,6 @@
 import socket
 import os
 import encriptacion as enc
-import math
 
 def client(host, port, filename, modo):
 	print("Cliente inicializado")
@@ -14,17 +13,17 @@ def client(host, port, filename, modo):
 	stats = str(filename) + '|' + str(filesize) + '|' + str(total) + '|'
 	contenido = stats + contenido
 
-	if modo == 1:
-		1
-	if modo == 2:
-		# separo el contenido en pedacitos de tamano n
-		# encripar los deja en tamano 512
-		n = 496
-		data = []
-		total = math.ceil( len(contenido)/n )*512
+	total = 0
+	data = []
+	if modo == 1: n = 512
+	if modo == 2: n = 496
 
-		for i in range(0, len(contenido), n):
-			data.append( enc.encrypt(contenido[i:i+n]) )
+	for i in range(0, len(contenido), n):
+		if modo == 1: dataEnc = enc.encrypt_sim(contenido[i:i+n])
+		if modo == 2: dataEnc = enc.encrypt(contenido[i:i+n])
+		total += len(dataEnc)
+		data.append( dataEnc )
+
 
 	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 		print("Estableciendo la conexion... ", end = '')

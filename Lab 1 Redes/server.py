@@ -20,11 +20,8 @@ def server(host, port, modo):
 			with clientsocket as c:
 				print(f"Conexion entrante: {address}")
 
-				if modo == 1:
-					1
-				if modo == 2:
-					data = enc.decrypt( c.recv(512) ).split("|", 3)
-
+				if modo == 1: data = enc.decrypt_sim( c.recv(512) ).split("|", 3)
+				if modo == 2: data = enc.decrypt( c.recv(512) ).split("|", 3)
 				filename = data.pop(0)
 				filesize = float( data.pop(0))
 				total = int( data.pop(0))
@@ -36,12 +33,10 @@ def server(host, port, modo):
 					if not buffer:
 						break
 					
-					if modo == 1:
-						1
-					if modo == 2:
-						bufferDec = enc.decrypt( buffer )
-						data.append(bufferDec)
-						recibido += len(bufferDec)
+					if modo == 1: bufferDec = enc.decrypt_sim(buffer)
+					if modo == 2: bufferDec = enc.decrypt( buffer )
+					data.append(bufferDec)
+					recibido += len(bufferDec)
 
 					print(f"Progreso: {round(100*recibido/total,2)}%")
 
