@@ -21,6 +21,7 @@ def client(host, port, cifrado, filename):
     if cifrado == 0:
         n = 512
     if cifrado == 1:
+        key = input("Ingrese la clave para cifrar: ")
         n = 512
     if cifrado == 2:
         n = 496
@@ -29,7 +30,7 @@ def client(host, port, cifrado, filename):
         if cifrado == 0:
             dataEnc = contenido[i:i+n].encode()
         if cifrado == 1:
-            dataEnc = enc.encrypt_sim(contenido[i:i+n])
+            dataEnc = enc.encrypt_sim(contenido[i:i+n], key)
         if cifrado == 2:
             dataEnc = enc.encrypt_asim(contenido[i:i+n])
         total += len(dataEnc)
