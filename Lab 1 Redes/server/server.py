@@ -31,7 +31,12 @@ def server(host, port, modo):
                     if modo == 0:
                         data = c.recv(512).decode().split("|", 3)
                     if modo == 1:
-                        data = enc.decrypt_sim(c.recv(512)).split("|", 3)
+                        key = input("Ingrese la clave para descifrar: ")
+                        try:
+                            data = enc.decrypt_sim(c.recv(512), key).split("|", 3)
+                        except:
+                            print(f"Clave incorrecta, finalizando el programa.")
+                            sys.exit(1)
                     if modo == 2:
                         data = enc.decrypt_asim(c.recv(512)).split("|", 3)
                 except socket.error:
@@ -58,7 +63,7 @@ def server(host, port, modo):
                     if modo == 0:
                         bufferDec = buffer.decode()
                     if modo == 1:
-                        bufferDec = enc.decrypt_sim(buffer)
+                        bufferDec = enc.decrypt_sim(buffer, key)
                     if modo == 2:
                         bufferDec = enc.decrypt_asim(buffer)
                     data.append(bufferDec)
