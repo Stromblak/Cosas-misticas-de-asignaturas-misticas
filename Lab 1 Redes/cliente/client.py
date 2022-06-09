@@ -16,10 +16,13 @@ def client(host, port, cifrado, filename):
 
 	total = 0
 	data = []
+	if cifrado == 0: n = 512
 	if cifrado == 1: n = 512
 	if cifrado == 2: n = 496
 
 	for i in range(0, len(contenido), n):
+		if cifrado == 0: 
+			dataEnc = contenido[i:i+n].encode()
 		if cifrado == 1: 
 			dataEnc = enc.encrypt_sim(contenido[i:i+n])
 		if cifrado == 2: 
