@@ -1,8 +1,6 @@
 import socket
 import os
-import sys
 import encriptacion as enc
-
 
 def client(host, port, cifrado, filename):
     print("Cliente inicializado")
@@ -45,14 +43,15 @@ def client(host, port, cifrado, filename):
             print("Cerrando cliente")
             return
 
-        # aqui supongo que se pueden indicar errores ??
         print(f"Enviando el archivo {filename} de tamaño {filesize} MB.")
         enviado = 0
         for d in data:
             try:
                 s.sendall(d)
             except socket.error:
-                print("Error enviando el archivo")
-                sys.exit(1)
+                print("Error al enviar el archivo")
+                print("Cerrando cliente")
+                return
+            
             enviado += len(d)
             print(f"Progreso: {round(100*enviado/total,2)}%")
