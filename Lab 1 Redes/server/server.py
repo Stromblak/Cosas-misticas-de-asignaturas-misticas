@@ -7,9 +7,8 @@ def server(host, port, modo):
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
-            # Bind socket, con la direccion y el puerto
-            s.bind((host, port))
-            # Listen
+            # Bind socket, con la direccion y el puerto, luego un listen
+            s.bind((host, port
             s.listen()
         except socket.error:
             print("Error en la creacion del servidor")
