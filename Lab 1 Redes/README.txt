@@ -1,4 +1,4 @@
-Para ejecutar el programa hacer:
+Para ejecutar el programa, hacer:
 
 	$ python main.py
 
@@ -17,7 +17,7 @@ Luego para cliente y servidor, apareceran 3 opciones
 	1: Cifrado Simetrico
 	2: Cifrado Asimetrico
 
-Donde, cada mensaje representa lo que dice (sin cifrado no cifrara,
+Donde cada mensaje representa lo que dice (sin cifrado no cifrara,
 cifrado asimetrico cifrara con cifrado asimetrico, etc.). Debe elegir
 una de las opciones escribiendo en el teclado.
 
