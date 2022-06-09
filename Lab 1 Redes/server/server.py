@@ -1,5 +1,4 @@
 import socket
-import sys
 import encriptacion as enc
 
 
@@ -12,21 +11,20 @@ def server(host, port, modo):
             s.bind((host, port))
             # Listen
             s.listen()
-            print("Esperando conexiones")
         except socket.error:
-            print("Error")
-            sys.exit(1)
-
+            print("Error en la creacion del servidor")
+            print("Cerrando servidor")
+            return
+        print("Esperando conexiones")
+        
         while True:
-            try:
-                clientsocket, address = s.accept()
-            except socket.error:
-                print("Error")
-                sys.exit(1)
-
+            # no creo que sea necesario un try aca
+            clientsocket, address = s.accept()
+            
             with clientsocket as c:
                 print(f"Conexion entrante: {address}")
-
+                
+                # aca tampoco estoy seguro, pero prefiero dejarlo por si acaso dsadas
                 try:
                     if modo == 0:
                         data = c.recv(512).decode().split("|", 3)
@@ -40,8 +38,9 @@ def server(host, port, modo):
                     if modo == 2:
                         data = enc.decrypt_asim(c.recv(512)).split("|", 3)
                 except socket.error:
-                    print(f"Error al recibir el archivo")
-                    sys.exit(1)
+                    print("Error al recibir el archivo")
+                    print("Cerrando servidor")
+                    return
 
                 filename = data.pop(0)
                 filesize = float(data.pop(0))
@@ -49,17 +48,19 @@ def server(host, port, modo):
                 filepath = "server\\" + filename
                 recibido = len(data[0])
 
-                print(
-                    f"Recibiendo el archivo {filename} de tamaño {filesize} MB.")
+                print(f"Recibiendo el archivo {filename} de tamaño {filesize} MB.")
                 print(f"Progreso: {round(100*recibido/total,2)}%")
                 while True:
                     try:
                         buffer = c.recv(512)
                     except socket.error:
                         print(f"Error al recibir el archivo")
-                        sys.exit(1)
+                        print("Cerrando servidor")
+                        return
+                    
                     if not buffer:
                         break
+                        
                     if modo == 0:
                         bufferDec = buffer.decode()
                     if modo == 1:
