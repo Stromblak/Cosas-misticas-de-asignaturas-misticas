@@ -20,16 +20,23 @@ def client(host, port, cifrado, filename):
 	if cifrado == 2: n = 496
 
 	for i in range(0, len(contenido), n):
-		if cifrado == 1: dataEnc = enc.encrypt_sim(contenido[i:i+n])
-		if cifrado == 2: dataEnc = enc.encrypt_asim(contenido[i:i+n])
+		if cifrado == 1: 
+			dataEnc = enc.encrypt_sim(contenido[i:i+n])
+		if cifrado == 2: 
+			dataEnc = enc.encrypt_asim(contenido[i:i+n])
 		total += len(dataEnc)
 		data.append(dataEnc)
 
 	with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 		print("Estableciendo la conexion... ", end = '')
-		s.connect((host, port))
-		print("Conexion exitosa!")
+		if not s.connect_ex((host, port)):
+			print("Conexion exitosa!")
+		else:
+			print("Conexion fallida")
+			print("Cerrando cliente")
+			return
 
+		# aqui supongo que se pueden indicar errores ??
 		print(f"Enviando el archivo {filename} de tamaño {filesize} MB.")
 		enviado = 0
 		for d in data:
