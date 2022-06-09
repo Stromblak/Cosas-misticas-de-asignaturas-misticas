@@ -53,6 +53,8 @@ def server(host, port, modo):
 
 				print(f"Recibiendo el archivo {filename} de tamaño {filesize} MB.")
 				print(f"Progreso: {round(100*recibido/total,2)}%")
+
+				p = 1
 				while True:
 					try:
 						buffer = c.recv(512)
@@ -72,7 +74,9 @@ def server(host, port, modo):
 					data.append(bufferDec)
 					recibido += len(bufferDec)
 
-					print(f"Progreso: {round(100*recibido/total,2)}%")
+					if round(100*recibido/total,2) >= p:
+						p += 1
+						print(f"Progreso: {round(100*recibido/total,2)}%")
 
 				with open(filepath, "w") as r:
 					r.write(''.join(data))
