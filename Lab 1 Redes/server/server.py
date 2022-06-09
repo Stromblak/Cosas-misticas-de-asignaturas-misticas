@@ -33,7 +33,7 @@ def server(host, port, modo):
                             data = enc.decrypt_sim(c.recv(512), key).split("|", 3)
                         except:
                             print(f"Clave incorrecta, finalizando el programa.")
-                            sys.exit(1)
+                            return
                     if modo == 2:
                         data = enc.decrypt_asim(c.recv(512)).split("|", 3)
                 except socket.error:
