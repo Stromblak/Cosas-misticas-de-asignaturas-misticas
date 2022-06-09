@@ -1,5 +1,6 @@
 import socket
 import encriptacion as enc
+import os
 
 def server(host, port, modo):
 	print("Servidor inicializado")
@@ -78,7 +79,17 @@ def server(host, port, modo):
 						p += 1
 						print(f"Progreso: {round(100*recibido/total,2)}%")
 
-				with open(filepath, "w") as r:
-					r.write(''.join(data))
+
+				if not os.path.exists("server\\" + filename):
+					with open(filepath, "w") as r:
+						r.write(''.join(data))
+
+				else:
+					i = 1
+					nombre, ext = filename.rsplit('.', 1)
+					while os.path.exists("server\\" + nombre + '-' + str(i) + '.' + ext):
+						i += 1
+					with open("server\\" + nombre + '-' + str(i) + '.' + ext, "w") as r:
+						r.write(''.join(data))
 
 				print(f"Conexion finalizada\n")
