@@ -6,7 +6,7 @@ from rudp import RUDPClient
 
 
 def main():
-    client = RUDPClient("localhost", 10000)
+    client = RUDPClient("localhost", 25565)
 
     try:
         reply = client.send_recv(b"hola")

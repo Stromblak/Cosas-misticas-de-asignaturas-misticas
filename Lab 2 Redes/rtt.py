@@ -1,6 +1,6 @@
 import datetime
 
-RTT_RXTMIN = 0.5
+RTT_RXTMIN = 5
 RTT_RXTMAX = 60
 RTT_MAXNREXMT = 5
 

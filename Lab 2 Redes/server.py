@@ -4,15 +4,15 @@ from rudp import RUDPServer
 
 
 def main():
-    server = RUDPServer(10000)
+	server = RUDPServer('localhost', 25565)
 
-    while True:
-        message, address = server.receive()
+	while True:
+		message, address = server.receive()
 
-        print(message)
+		print(message)
 
-        server.reply(address, b"chao")
-
+		server.reply(address, b"chao")
+		break
 
 if __name__ == "__main__":
-    main()
+	main()
