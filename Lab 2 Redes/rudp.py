@@ -22,17 +22,18 @@ class Datagram:
 		self.timestamp = timestamp
 
 class cifrado:
-	def encrypt(message, key):
-		hashKey = hashlib.sha256( key.encode() ).digest()
-		iv = 'This is an IV456'.encode()
-		obj = AES.new(hashKey, AES.MODE_CFB, iv)
-		return obj.encrypt(message.encode())
+	def __init__(self, key):
+		self.iv = 'This is an IV456'.encode()
+		self.hashKey = hashlib.sha256( key.encode() ).digest()
 
-	def decrypt(ciphertext, key):
-		hashKey = hashlib.sha256( key.encode() ).digest()
-		iv = 'This is an IV456'.encode()
-		obj = AES.new(hashKey, AES.MODE_CFB, iv)
-		return obj.decrypt(ciphertext).decode()
+	def encrypt(self, pickle):	
+		cipher = AES.new(self.hashKey, AES.MODE_CFB, self.iv)
+		return cipher.encrypt( pickle )
+
+	def decrypt(self, cipherPickle):
+		cipher = AES.new(self.hashKey, AES.MODE_CFB, self.iv)
+		return cipher.decrypt(cipherPickle)
+
 
 class RUDPServer(cifrado):
 	def __init__(self, host, port):
