@@ -26,17 +26,23 @@ class cifrado:
 		self.__hashKey = hashlib.sha256( key.encode() ).digest()
 		self.__mode = AES.MODE_CFB
 
-	def encrypt(self, pickle):	
-		cipher = AES.new(self.__hashKey, self.__mode, self.__iv)
-		return cipher.encrypt( pickle )
+	def __cipher(self):
+		return AES.new(self.__hashKey, self.__mode, self.__iv)
+
+	def encrypt(self, datagram):	
+		pickleData = pickle.dumps( datagram )
+		cipherPickle = self.__cipher().encrypt( pickleData )
+		return cipherPickle
 
 	def decrypt(self, cipherPickle):
-		cipher = AES.new(self.__hashKey, self.__mode, self.__iv)
-		return cipher.decrypt( cipherPickle )
+		pickleData = self.__cipher().decrypt( cipherPickle )
+		datagram = pickle.loads( pickleData )
+		return datagram
 
 
 class RUDPServer(cifrado):
 	def __init__(self, host, port):
+		self.__aes = cifrado('cambiame')
 		try:
 			self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 			self.s.bind( (host, port) )
@@ -45,20 +51,23 @@ class RUDPServer(cifrado):
 			sys.exit(1)
 
 	def receive(self):
-		pickleData, address = self.s.recvfrom( buffersize )
-		datagram = pickle.loads( pickleData )
+		cipherPickle, address = self.s.recvfrom( buffersize )
+		datagram = self.__aes.decrypt( cipherPickle )
 
 		self.last_seqno = datagram._sequence_no
-		
+	
 		return (datagram._payload, address)
 
 	def reply(self, address, payload):
-		datagram = Datagram(payload, address, self.last_seqno)
-		self.s.sendto( pickle.dumps(datagram), address )
+		datagram = Datagram( payload, address, self.last_seqno )
+		cipherPickle = self.__aes.encrypt( datagram )
+
+		self.s.sendto( cipherPickle, address )
 
 
 class RUDPClient(cifrado):
 	def __init__(self, host, port):
+		self.__aes = cifrado('cambiame')
 		self.address = (host, port)
 		self.sequence_no = 0
 
@@ -70,23 +79,23 @@ class RUDPClient(cifrado):
 			sys.exit(1)
 
 	def send_recv(self, payload):
-		datagram = Datagram(payload, self.address, self.sequence_no)
-		pickleData = pickle.dumps(datagram)
+		datagram = Datagram( payload, self.address, self.sequence_no )
+		cipherPickle = self.__aes.encrypt( datagram )
 
 		t = 0.5
 		send = False
 
 		while not send and t <= 16:
 			ti = time.time()
-			self.s.sendto(pickleData, self.address)
+			self.s.sendto(cipherPickle, self.address)
 			while True:
 				try:
 					if time.time() - ti > t:
 						t *= 2
 						break
 
-					recvPickleData = self.s.recv( buffersize )
-					recvDatagram = pickle.loads( recvPickleData )
+					recvCipherPickle = self.s.recv( buffersize )
+					recvDatagram = self.__aes.decrypt( recvCipherPickle )
 
 				except BlockingIOError:
 					continue
