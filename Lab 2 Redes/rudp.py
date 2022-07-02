@@ -25,13 +25,14 @@ class cifrado:
 	def __init__(self, key):
 		self.iv = 'This is an IV456'.encode()
 		self.hashKey = hashlib.sha256( key.encode() ).digest()
+		self.mode = AES.MODE_CFB
 
 	def encrypt(self, pickle):	
-		cipher = AES.new(self.hashKey, AES.MODE_CFB, self.iv)
+		cipher = AES.new(self.hashKey, self.mode, self.iv)
 		return cipher.encrypt( pickle )
 
 	def decrypt(self, cipherPickle):
-		cipher = AES.new(self.hashKey, AES.MODE_CFB, self.iv)
+		cipher = AES.new(self.hashKey, self.mode, self.iv)
 		return cipher.decrypt(cipherPickle)
 
 
