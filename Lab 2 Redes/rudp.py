@@ -40,7 +40,7 @@ class cifrado:
 		return datagram
 
 
-class RUDPServer(cifrado):
+class RUDPServer:
 	def __init__(self, host, port):
 		self.__aes = cifrado('cambiame')
 		try:
@@ -65,7 +65,7 @@ class RUDPServer(cifrado):
 		self.s.sendto( cipherPickle, address )
 
 
-class RUDPClient(cifrado):
+class RUDPClient:
 	def __init__(self, host, port):
 		self.__aes = cifrado('cambiame')
 		self.address = (host, port)
