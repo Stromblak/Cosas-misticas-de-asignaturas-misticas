@@ -1,90 +1,60 @@
-import socket
+from asyncio.windows_events import NULL
+import sys
 import encriptacion as enc
 import os
 from rudp import RUDPServer
 
 
-def server(host, port, modo):
+def server(host, port, cifrado, filename):
     print("Servidor inicializado")
 
-    server = RUDPServer(host, port)
+    filepath = "server\\" + filename
+    with open(filepath, "r") as f:
+        contenido = f.read()
+
+    total = len(contenido)
+    filesize = round(os.path.getsize(filepath) / (1000 ** 2), 3)
+    stats = str(filename) + '|' + str(filesize) + '|' + str(total) + '|'
+    contenido = stats + contenido
+
+    total = 0
+    data = []
+    n = 512
+    if cifrado == 1:
+        key = input("Ingrese la clave para cifrar: ")
+    if cifrado == 2:
+        n = 496
+
+    p = 0
+    for i in range(0, len(contenido), n):
+        if cifrado == 0:
+            dataEnc = contenido[i:i+n].encode()
+        if cifrado == 1:
+            dataEnc = enc.encrypt_sim(contenido[i:i+n], key)
+        if cifrado == 2:
+            dataEnc = enc.encrypt_asim(contenido[i:i+n])
+
+        if round(100*i/len(contenido), 2) >= p:
+            p += 1
+            print(f"Codificando archivo: {round(100*i/len(contenido),2)}%")
+
+        total += len(dataEnc)
+        data.append(dataEnc)
+    print("Codificando archivo: 100%\n")
+    p = 0
+
+    s = RUDPServer(host, port)
     print("Esperando conexiones")
-
+    print(f"Se enviara el archivo {filename} de tamaño {filesize} MB.")
+    
     while True:
-        c, address = server.receive()
-        server.reply(address, b"Recibido exitosamente.")
-        print(f"Conexion entrante: {address}")
-
-        if modo == 0:
+        message, address = s.receive()
+        for d in data:
             try:
-                data = c.decode().split("|", 3)
+                s.reply(address, d)
             except:
-                print("Error al procesar el archivo, cerrando servidor")
-                return
-
-        if modo == 1:
-            clave = input("Ingresar clave: ")
-            try:
-                data = enc.decrypt_sim(
-                    c, clave).split("|", 3)
-            except:
-                print("Clave incorrecta, cerrando servidor")
-                return
-
-        if modo == 2:
-            try:
-                data = enc.decrypt_asim(c).split("|", 3)
-            except:
-                print("Error al procesar el archivo, cerrando servidor")
-                return
-
-        filename = data.pop(0)
-        filesize = float(data.pop(0))
-        filepath = "server\\" + filename
-        total = int(data.pop(0))
-        recibido = len(data[0])
-
-        print(
-            f"Recibiendo el archivo {filename} de tamaño {filesize} MB.")
-        print(f"Progreso: {round(100*recibido/total,2)}%")
-
-        p = 1
-        while True:
-            try:
-                buffer, address = server.receive()
-                server.reply(address, b"Recibido exitosamente.")
-            except:
-                print("Error al recibir el archivo, cerrando servidor")
-                return
-
-            if not buffer:
-                server.reply(address, b"Recibido exitosamente.")
-                break
-                
-
-            if modo == 0:
-                bufferDec = buffer.decode()
-            if modo == 1:
-                bufferDec = enc.decrypt_sim(buffer, clave)
-            if modo == 2:
-                bufferDec = enc.decrypt_asim(buffer)
-            data.append(bufferDec)
-            recibido += len(bufferDec)
-
-            if round(100*recibido/total, 2) >= p:
-                p += 1
-                print(f"Progreso: {round(100*recibido/total,2)}%")
-
-        if not os.path.exists("server\\" + filename):
-            with open(filepath, "w") as r:
-                r.write(''.join(data))
-
-        else:
-            i = 1
-            nombre, ext = filename.rsplit('.', 1)
-            while os.path.exists("server\\" + nombre + '-' + str(i) + '.' + ext):
-                i += 1
-            with open("server\\" + nombre + '-' + str(i) + '.' + ext, "w") as r:
-                r.write(''.join(data))
-
-        print(f"Conexion finalizada\n")
+                print("no response; giving up", file=sys.stderr)
+                os._exit(1)
+        s.reply(address, NULL)
+        print(message)
+    print(f"Conexion finalizada\n")

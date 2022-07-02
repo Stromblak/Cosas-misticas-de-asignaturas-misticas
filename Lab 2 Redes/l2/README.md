@@ -2,26 +2,26 @@
 
 - Para ejecutar el programa, hacer:
 
-	- $ python main.py
+	`$ python main.py`
 
 - Luego apareceran 2 opciones:
 
-	- 1: Servidor
-	- 2: Cliente
+	`1: Servidor`
+	`2: Cliente`
 
 Debe elegir una de las 2 opciones escribiendo en el teclado.
 
 - Luego para cliente y servidor, apareceran 3 opciones:
 	
-	- 0: Sin encriptacion
-	- 1: Encriptacion simetrica
-	- 2: Encriptacion asimetrica
+	`0: Sin encriptacion`
+	`1: Encriptacion simetrica`
+	`2: Encriptacion asimetrica`
 
 Donde cada mensaje representa lo que dice (Sin encriptacion no cifrara,
 Encriptacion simetrica cifrara con cifrado asimetrico, etc.). Debe elegir
 una de las opciones escribiendo en el teclado.
 
-- Despues, se ejecutara el programa si escogio servidor. Si eligio cliente, debe ingresar el nombre del archivo a enviar, con su extension, por ejemplo: data.txt
+- Despues, se ejecutara el programa si escogio servidor. Si eligio cliente, debe ingresar el nombre del archivo a enviar, con su extension, por ejemplo: `data.txt`
 
 - Cosas a tener en cuenta para que funcione bien el programa:
 

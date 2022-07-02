@@ -1,6 +1,5 @@
 from cliente import client
 from server import server
-import socket
 import os
 
 host = 'localhost'
@@ -26,13 +25,12 @@ while cifrado != 1 and cifrado != 2 and cifrado != 0:
 print()
 
 if modo == 1:
-    server.server(host, port, cifrado)
-if modo == 2:
-    archivo = input("Ingresar nombre de archivo: ")
+    archivo = input("Ingresar el nombre del archivo que se permitira descargar: ")
 
-    while not os.path.exists("cliente\\" + archivo):
+    while not os.path.exists("server\\" + archivo):
         print("Archivo no encontrado")
         archivo = input("Ingresar nombre de archivo: ")
     print()
-
-    client.client(host, port, cifrado, archivo)
+    server.server(host, port, cifrado, archivo)
+if modo == 2:
+    client.client(host, port, cifrado)
