@@ -4,6 +4,9 @@ import sys
 import _thread
 import threading
 
+import hashlib
+from Crypto.Cipher import AES
+
 import rtt
 buffersize = 1024
 
@@ -11,7 +14,6 @@ buffersize = 1024
 # cambie algunas cosas, y me gustaria desacerme del rtt porque siento que es innecesario xD
 # tambien hacerle un rework a los intentos de envio xD
 
-# payload: bytes
 class Datagram:
 	def __init__(self, payload, address, sequence_no, timestamp):
 		self.payload = payload
@@ -19,8 +21,20 @@ class Datagram:
 		self.sequence_no = sequence_no
 		self.timestamp = timestamp
 
+class cifrado:
+	def encrypt(message, key):
+		hashKey = hashlib.sha256( key.encode() ).digest()
+		iv = 'This is an IV456'.encode()
+		obj = AES.new(hashKey, AES.MODE_CFB, iv)
+		return obj.encrypt(message.encode())
 
-class RUDPServer:
+	def decrypt(ciphertext, key):
+		hashKey = hashlib.sha256( key.encode() ).digest()
+		iv = 'This is an IV456'.encode()
+		obj = AES.new(hashKey, AES.MODE_CFB, iv)
+		return obj.decrypt(ciphertext).decode()
+
+class RUDPServer(cifrado):
 	def __init__(self, host, port):
 		try:
 			self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -43,7 +57,7 @@ class RUDPServer:
 		self.s.sendto( pickle.dumps(datagram), address )
 
 
-class RUDPClient:
+class RUDPClient(cifrado):
 	def __init__(self, host, port):
 		self.address = (host, port)
 		self.sequence_no = 0
