@@ -33,7 +33,7 @@ class cifrado:
 
 	def decrypt(self, cipherPickle):
 		cipher = AES.new(self.hashKey, self.mode, self.iv)
-		return cipher.decrypt(cipherPickle)
+		return cipher.decrypt( cipherPickle )
 
 
 class RUDPServer(cifrado):
