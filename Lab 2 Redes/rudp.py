@@ -46,10 +46,10 @@ class RUDPServer(cifrado):
 
 	def receive(self):
 		pickleData, address = self.s.recvfrom( buffersize )
-		datagram = pickle.loads(pickleData)
+		datagram = pickle.loads( pickleData )
 
 		self.last_seqno = datagram._sequence_no
-
+		
 		return (datagram._payload, address)
 
 	def reply(self, address, payload):
@@ -85,8 +85,8 @@ class RUDPClient(cifrado):
 						t *= 2
 						break
 
-					data = self.s.recv( buffersize )
-					recvDatagram = pickle.loads(data)
+					recvPickleData = self.s.recv( buffersize )
+					recvDatagram = pickle.loads( recvPickleData )
 
 				except BlockingIOError:
 					continue
