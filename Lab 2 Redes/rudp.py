@@ -1,13 +1,10 @@
 import socket
 import pickle
 import sys
-import _thread
-import threading
-
+import time
 import hashlib
 from Crypto.Cipher import AES
 
-import rtt
 buffersize = 1024
 
 # https://github.com/jorgejarai/redes_udec/tree/main/lab1-2_rtt/python
@@ -15,11 +12,10 @@ buffersize = 1024
 # tambien hacerle un rework a los intentos de envio xD
 
 class Datagram:
-	def __init__(self, payload, address, sequence_no, timestamp):
+	def __init__(self, payload, address, sequence_no):
 		self.payload = payload
 		self.address = address
 		self.sequence_no = sequence_no
-		self.timestamp = timestamp
 
 class cifrado:
 	def __init__(self, key):
@@ -50,12 +46,11 @@ class RUDPServer(cifrado):
 		datagram = pickle.loads(data)
 
 		self.last_seqno = datagram.sequence_no
-		self.last_ts = datagram.timestamp
 
 		return (datagram.payload, address)
 
 	def reply(self, address, payload):
-		datagram = Datagram(payload, address, self.last_seqno, self.last_ts)
+		datagram = Datagram(payload, address, self.last_seqno)
 		self.s.sendto( pickle.dumps(datagram), address )
 
 
@@ -63,7 +58,6 @@ class RUDPClient(cifrado):
 	def __init__(self, host, port):
 		self.address = (host, port)
 		self.sequence_no = 0
-		self.rtt = rtt.RTT()
 
 		try:
 			self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -73,46 +67,33 @@ class RUDPClient(cifrado):
 			sys.exit(1)
 
 	def send_recv(self, payload):
-		timestamp = self.rtt.timestamp()
+		datagram = Datagram(payload, self.address, self.sequence_no)
+		pickleData = pickle.dumps(datagram)
 
-		datagram = Datagram(payload, self.address, self.sequence_no, timestamp)
-		serialised_datagram = pickle.dumps(datagram)
+		t = 0.5
+		send = False
 
-		self.rtt.new_packet()
-
-		event = threading.Event()
-
-		def timeout():
-			print("timeout")
-			if self.rtt.timeout():
-				_thread.interrupt_main()
-			else:
-				event.set()
-
-		recvDatagram = None
-		attempting_send = True
-		while attempting_send:
-			event.clear()
-			self.s.sendto(serialised_datagram, self.address)
-
-			timer = threading.Timer(self.rtt.start(), timeout)
-			timer.start()
-
+		while not send and t <= 16:
+			ti = time.time()
+			self.s.sendto(pickleData, self.address)
 			while True:
 				try:
-					if event.wait(timeout=0.05):
+					if time.time() - ti > t:
+						t *= 2
 						break
 
 					data = self.s.recv( buffersize )
 					recvDatagram = pickle.loads(data)
+
 				except BlockingIOError:
 					continue
 
 				if recvDatagram.sequence_no == self.sequence_no:
-					attempting_send = False
+					send = True
 					break
 
-		timer.cancel()
-		self.rtt.stop(self.rtt.timestamp() - recvDatagram.timestamp)
-
-		return recvDatagram.payload
+		if send:
+			return recvDatagram.payload
+		else:
+			pass
+			# error?		
