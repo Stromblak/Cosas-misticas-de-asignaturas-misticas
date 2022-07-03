@@ -10,7 +10,7 @@ while True:
 	message, address = server.receive()
 
 	if address not in con:
-		print('Nueva conexion', address)
+		print('Nueva conexion:', address)
 		con[address] = [ROOT]
 
 	match message:
