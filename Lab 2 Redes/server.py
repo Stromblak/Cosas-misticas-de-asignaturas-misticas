@@ -1,29 +1,29 @@
-from sqlite3 import connect
 from rudp import RUDPServer
 import os
 
-server = RUDPServer('localhost', 25565, 'key')
 
-ROOT = 'Cosas'
+server = RUDPServer('localhost', 25565, 'key')
 con = dict()
+ROOT = 'Cosas'
 
 while True:
-	message, address = server.receive()
+	(tipo, message), address = server.receive()
+	direccion = str(address[0]) + ' ' +  str(address[1])
 
 	if address not in con:
-		print(address, ' Conexion entrante')
 		con[address] = 1
 		server.reply(address, ROOT)
+		print(direccion, ' Nueva conexion')
 		continue
 
-	match message[0]:
+	match tipo:
 		case 'search':
-			path = '/'.join( message[1] )
+			path = '/'.join( message )
 			files = os.listdir(path)
 			server.reply(address, files)
 
 		case 'select':
-			filepath = '/'.join( message[1] )
+			filepath = '/'.join( message )
 			with open(filepath, "r") as f:
 				contenido = f.read()
 
@@ -32,24 +32,23 @@ while True:
 				data.append( contenido[i:i+398] )
 
 			filesize = round(os.path.getsize(filepath) / (1000 ** 2), 3)
-			filename = message[1][-1]
+			filename = message[-1]
 			partes = len(data)
 			info = (filename, filesize, partes)
 
 			con[address] = data
 			server.reply(address, info)
-
-			print(f"{address}  Listo para enviar el archivo {filename} de tamaño {filesize} MB.")
+			print(f"{direccion}  Listo para enviar el archivo {filename} de tamaño {filesize} MB")
 
 		case 'download':
-			parte = message[1]
+			parte = message
 			data = con[address]
 			porcentaje = round(100*(parte+1)/len(data), 2)
 
-			print(f"{address}  Enviando: {porcentaje}%")
 			server.reply(address, data[parte])
+			print(f"{direccion}  Enviando: {porcentaje}%")
 		
 		case 'fin':
 			del con[address]
-			server.reply(address, 'fin')
-			continue
+			server.reply(address, '')
+			print(f"{direccion}  Finalizado")
