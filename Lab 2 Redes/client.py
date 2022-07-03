@@ -1,27 +1,38 @@
-#!/usr/bin/env python3
-import sys
-import os
-
 from rudp import RUDPClient
 
 
-def main():
-    client = RUDPClient("localhost", 25565)
+client = RUDPClient("localhost", 25565)
 
-    try:
-        reply = client.send_recv(b"hola")
-
-        print(reply)
-    except:
-        print("no response; giving up", file=sys.stderr)
-
-        # Necesitamos usar os._exit en lugar de sys.exit,
-        # pues el proceso de esperar una respuesta del servidor
-        # utiliza hilos y la salida "forzosa" que nos ofrece
-        # os._exit mata esos hilos a la vez que mata el proceso
-        # principal
-        os._exit(1)
+print('(carpeta): Moverse a la carpeta')
+print('(archivo): Descargar archivo')
+print('..       : Retroceder')
+print('~        : Volver al inicio')
+print('close    : Salir')
 
 
-if __name__ == "__main__":
-    main()
+
+archivos = client.send_recv('~')
+print( archivos )
+
+while True:
+	accion = input()
+
+	if accion in ['..', '~']:
+		archivos = client.send_recv( accion )
+		print( archivos )
+	
+	elif accion.split('.')[-1] in ['.txt', '.bin']:
+		break
+		# pasar a recivir archivo
+
+	elif accion in archivos:
+		archivos = client.send_recv( accion )
+		print( archivos )
+
+	elif accion == 'close':
+		break
+	
+	else:
+		print('Input incorrecto')
+		continue
+

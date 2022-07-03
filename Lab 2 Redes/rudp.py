@@ -20,6 +20,7 @@ class Datagram:
 		self._address = address
 		self._sequence_no = sequence_no
 
+
 class cifrado:
 	def __init__(self, key):
 		self.__iv = 'This is an IV456'.encode()
@@ -105,7 +106,8 @@ class RUDPClient:
 					break
 
 		if send:
+			self.sequence_no += 1
 			return recvDatagram._payload
 		else:
-			pass
-			# error?		
+			print("Conexion perdida con el servidor", sys.stderr)
+			sys.exit(1)
