@@ -18,7 +18,7 @@ while True:
 			con[address] = [ROOT]
 		case '..':
 			if con[address][-1] != ROOT:
-				dir.pop()
+				con[address].pop()
 		case _:
 			con[address].append(message)
 			if os.path.isfile( '/'.join( con[address] )):
