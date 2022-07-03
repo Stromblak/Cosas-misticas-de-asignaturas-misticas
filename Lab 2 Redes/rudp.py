@@ -15,9 +15,8 @@ buffersize = 1024
 
 
 class Datagram:
-	def __init__(self, payload, address, sequence_no):
+	def __init__(self, payload, sequence_no):
 		self._payload = payload
-		self._address = address
 		self._sequence_no = sequence_no
 
 
@@ -37,8 +36,12 @@ class cifrado:
 
 	def decrypt(self, cipherPickle):
 		pickleData = self.__cipher().decrypt( cipherPickle )
-		datagram = pickle.loads( pickleData )
-		return datagram
+
+		try:
+			datagram = pickle.loads( pickleData )
+			return datagram
+		except:
+			return Datagram( ('-1', '-1') , -1)
 
 
 class RUDPServer:
@@ -60,7 +63,7 @@ class RUDPServer:
 		return (datagram._payload, address)
 
 	def reply(self, address, payload):
-		datagram = Datagram( payload, address, self.last_seqno )
+		datagram = Datagram( payload, self.last_seqno )
 		cipherPickle = self.__aes.encrypt( datagram )
 
 		self.s.sendto( cipherPickle, address )
@@ -80,7 +83,7 @@ class RUDPClient:
 			sys.exit(1)
 
 	def send_recv(self, payload):
-		datagram = Datagram( payload, self.address, self.sequence_no )
+		datagram = Datagram( payload, self.sequence_no )
 		cipherPickle = self.__aes.encrypt( datagram )
 
 		t = 0.5

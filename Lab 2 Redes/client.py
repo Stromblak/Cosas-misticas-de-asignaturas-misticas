@@ -3,9 +3,11 @@ import sys
 import os
 
 
-client = RUDPClient("localhost", 25565, 'key')
+client = RUDPClient("localhost", 25565, 'ke2y')
 
-ROOT = client.send_recv( ('', '') )
+ROOT = client.send_recv( ('con', '') )
+print(ROOT)
+
 dir = [ROOT]
 archivos = client.send_recv( ('search', dir) )
 
