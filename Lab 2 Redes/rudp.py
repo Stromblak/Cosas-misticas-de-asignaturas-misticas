@@ -42,8 +42,8 @@ class cifrado:
 
 
 class RUDPServer:
-	def __init__(self, host, port):
-		self.__aes = cifrado('cambiame')
+	def __init__(self, host, port, key):
+		self.__aes = cifrado(key)
 		try:
 			self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 			self.s.bind( (host, port) )
@@ -67,8 +67,8 @@ class RUDPServer:
 
 
 class RUDPClient:
-	def __init__(self, host, port):
-		self.__aes = cifrado('cambiame')
+	def __init__(self, host, port, key):
+		self.__aes = cifrado(key)
 		self.address = (host, port)
 		self.sequence_no = 0
 
