@@ -1,8 +1,5 @@
-from audioop import add
 from rudp import RUDPServer
 import os
-
-from collections import defaultdict
 
 server = RUDPServer('localhost', 25565)
 
@@ -13,7 +10,7 @@ while True:
 	message, address = server.receive()
 
 	if address not in con:
-		print('Nueva conexxion', address)
+		print('Nueva conexion', address)
 		con[address] = [ROOT]
 
 	match message:
