@@ -33,5 +33,5 @@ while True:
 
 
 print(f"Recibiendo el archivo {info[0]} de tamaño {info[1]} MB.")
-	
+# agregar en info la cantidad de paquetes para luego ir pidiendolos uno a uno
 
