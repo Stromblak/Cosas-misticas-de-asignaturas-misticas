@@ -1,5 +1,4 @@
 from rudp import RUDPClient
-from rudp import Datagram
 import sys
 import os
 
@@ -34,6 +33,8 @@ while True:
 		sys.exit(1)
 
 
+
+
 filename = info[0]
 filesize = info[1]
 partes = info[2]
@@ -41,16 +42,13 @@ print(f"Recibiendo el archivo {filename} de tamaño {filesize} MB.")
 
 data = []
 for i in range(partes):
-	data.append( client.send_recv( '/' + str(i) ) )
+	data.append( client.send_recv( ('/', i) ) )
 	print(f"Progreso: {round(100*(i+1)/partes,2)}%")
-
-data.append( client.send_recv('/' + str(partes)) )
 
 
 if not os.path.exists(filename):
 	with open(filename, "w") as r:
 		r.write( ''.join(data) )
-
 else:
 	i = 1
 	nombre, ext = filename.rsplit('.', 1)

@@ -19,7 +19,7 @@ def procesar(address, filepath, filename):
 	info = (filename, filesize, partes)
 
 	server.reply(address, info)
-	print(f"{address} Enviando el archivo {filename} de tamaño {filesize} MB.")
+	print(f"{address}  Enviando el archivo {filename} de tamaño {filesize} MB.")
 	
 	return data
 		
@@ -28,7 +28,7 @@ while True:
 
 	if message[0] != '/':
 		if address not in con:
-			print('Nueva conexion:', address)
+			print(address, ' Conexion entrante')
 			con[address] = [ROOT]
 
 		match message:
@@ -51,12 +51,9 @@ while True:
 		server.reply(address, files)
 		
 	else:
-		parte = int( message[1] )
+		parte = message[1]
 		data = con[address]
-		partes = len( data )
+		porcentaje = round(100*(parte+1)/len(data), 2)
 
-		if parte < partes:
-			print(f"{address} Progreso: {round(100*(parte+1)/partes,2)}%")
-			server.reply(address, data[parte])
-		else:
-			server.reply(address, '')
+		print(f"{address}  Progreso: {porcentaje}%")
+		server.reply(address, data[parte])
