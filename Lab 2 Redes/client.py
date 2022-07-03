@@ -4,7 +4,10 @@ import os
 
 
 client = RUDPClient("localhost", 25565, 'key')
-archivos = client.send_recv('~')
+
+ROOT = client.send_recv('')
+dir = [ROOT]
+archivos = client.send_recv( ('search', dir) )
 
 print('(carpeta): Moverse a la carpeta')
 print('(archivo): Descargar archivo')
@@ -19,20 +22,24 @@ while True:
 	accion = input()
 	print()
 
-	if accion in ['..', '~']:
-		archivos = client.send_recv( accion )
+	match accion:
+		case '..':
+			if dir[-1] != ROOT:
+				dir.pop()
 		
-	elif accion in archivos:
-		if accion.split('.')[-1] in ['txt', 'bin', 'py']:
-			info = client.send_recv( accion )
-			break
-		else: 
-			archivos = client.send_recv( accion )
+		case '~':
+			dir = [ROOT]
 
-	elif accion == 'close':
-		sys.exit(1)
+		case 'close':
+			sys.exit(1)
+		
+		case archivos:
+			dir.append(accion)
+			if accion.split('.')[-1] in ['txt', 'bin', 'py']:
+				info = client.send_recv( ('select', dir) )
+				break
 
-
+	archivos = client.send_recv( ('search', dir) )
 
 
 filename = info[0]
@@ -42,8 +49,10 @@ print(f"Recibiendo el archivo {filename} de tamaño {filesize} MB.")
 
 data = []
 for i in range(partes):
-	data.append( client.send_recv( ('/', i) ) )
+	data.append( client.send_recv( ('download', i) ) )
 	print(f"Progreso: {round(100*(i+1)/partes,2)}%")
+
+client.send_recv( ('fin', 1) )
 
 
 if not os.path.exists(filename):
