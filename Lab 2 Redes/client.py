@@ -5,7 +5,7 @@ import os
 
 client = RUDPClient("localhost", 25565, 'key')
 
-ROOT = client.send_recv('')
+ROOT = client.send_recv( ('', '') )
 dir = [ROOT]
 archivos = client.send_recv( ('search', dir) )
 
@@ -45,7 +45,7 @@ while True:
 filename = info[0]
 filesize = info[1]
 partes = info[2]
-print(f"Recibiendo el archivo {filename} de tamaño {filesize} MB.")
+print(f"Descargando el archivo {filename} de tamaño {filesize} MB.")
 
 data = []
 for i in range(partes):
@@ -58,10 +58,13 @@ client.send_recv( ('fin', 1) )
 if not os.path.exists(filename):
 	with open(filename, "w") as r:
 		r.write( ''.join(data) )
+
 else:
 	i = 1
 	nombre, ext = filename.rsplit('.', 1)
-	while os.path.exists(nombre + '-' + str(i) + '.' + ext):
+	nombre, ext = nombre + '-', '.' + ext
+	while os.path.exists(nombre + str(i) + ext):
 		i += 1
-	with open(nombre + '-' + str(i) + '.' + ext, "w") as r:
+
+	with open(nombre + str(i) + ext, "w") as r:
 		r.write(''.join(data))
