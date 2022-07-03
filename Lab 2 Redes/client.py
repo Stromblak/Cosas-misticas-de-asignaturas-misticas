@@ -13,6 +13,7 @@ print('close    : Salir')
 print()
 
 while True:
+	# si son muchos archivos aqui es una linea gigante
 	print( '    '.join(archivos) )
 	accion = input()
 	print()
