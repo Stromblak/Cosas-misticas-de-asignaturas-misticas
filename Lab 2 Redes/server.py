@@ -10,13 +10,11 @@ while True:
 	(tipo, message), address = server.receive()
 	direccion = str(address[0]) + ' ' +  str(address[1])
 
-	if address not in con:
-		con[address] = 1
-		server.reply(address, ROOT)
-		print(direccion, ' Nueva conexion')
-		continue
-
 	match tipo:
+		case 'con':
+			server.reply(address, ROOT)
+			print(direccion, ' Nueva conexion')
+
 		case 'search':
 			path = '/'.join( message )
 			files = os.listdir(path)
