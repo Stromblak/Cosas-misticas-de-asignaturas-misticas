@@ -21,13 +21,14 @@ while True:
 		archivos = client.send_recv( accion )
 		print( archivos )
 	
-	elif accion.split('.')[-1] in ['.txt', '.bin']:
-		break
-		# pasar a recivir archivo
-
 	elif accion in archivos:
-		archivos = client.send_recv( accion )
-		print( archivos )
+		if accion.split('.')[-1] in ['txt', 'bin']:
+			client.send_recv( accion )
+			break
+			# pasar a recivir archivo
+		else:
+			archivos = client.send_recv( accion )
+			print( archivos )
 
 	elif accion == 'close':
 		break

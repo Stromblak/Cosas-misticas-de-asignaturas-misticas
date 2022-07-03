@@ -16,16 +16,21 @@ while True:
 	match message:
 		case '~':
 			con[address] = [ROOT]
+
 		case '..':
 			if con[address][-1] != ROOT:
 				con[address].pop()
+				
 		case _:
-			con[address].append(message)
+			con[address].append( message )
 			if os.path.isfile( '/'.join( con[address] )):
 				del con[address]
-				break
 				#pasar a enviar archivo
+				
+				server.reply(address, 'relleno')
+				break
 
 
 	files = os.listdir('/'.join( con[address] ))
 	server.reply(address, files)
+
