@@ -44,9 +44,8 @@ while True:
 			filesize = round(os.path.getsize(filepath) / (1000 ** 2), 3)
 			filename = message[-1]
 			partes = len(data)
-			info = (filename, filesize, partes)
 
-			server.reply(address, info)
+			server.reply( address, (filename, filesize, partes) )
 			print(f"{direccion}  Listo para enviar el archivo {filename} de tamaño {filesize} MB")
 
 		case 'send':

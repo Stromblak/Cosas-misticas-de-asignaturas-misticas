@@ -1,4 +1,3 @@
-from cmath import inf
 import socket
 import pickle
 import sys
@@ -42,7 +41,7 @@ class cifrado:
 			datagram = pickle.loads( pickleData )
 			return datagram
 		except:
-			return Datagram( ('error', 1) , 1)
+			return Datagram( ('error', -1) , -1)
 
 
 class RUDPServer:
@@ -101,7 +100,6 @@ class RUDPClient:
 
 					recvCipherPickle = self.s.recv( buffersize )
 					recvDatagram = self.__aes.decrypt( recvCipherPickle )
-
 				except BlockingIOError:
 					continue
 

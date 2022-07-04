@@ -4,10 +4,8 @@ import os
 
 
 client = RUDPClient("localhost", 25565, 'key')
-
 ROOT = client.send_recv( ('root', '') )
 dir = [ROOT]
-carpetas, archivos = client.send_recv( ('search', dir) )
 
 print('(carpeta): Moverse a la carpeta')
 print('(archivo): Descargar archivo')
@@ -18,10 +16,11 @@ print()
 
 # si son muchos archivos aqui es una linea gigante
 while True:
+	carpetas, archivos = client.send_recv( ('search', dir) )
+
 	if len(carpetas):
 		print('Carpetas:')
-		print( '    '.join(carpetas) )
-		print()
+		print( '    '.join(carpetas) + '\n')
 	if len(archivos):
 		print('Archivos:')
 		print( '    '.join(archivos) )
@@ -45,17 +44,14 @@ while True:
 	elif accion in carpetas:
 		dir.append(accion)
 
-	carpetas, archivos = client.send_recv( ('search', dir) )
 
-
-info = client.send_recv( ('info', dir) )
-filename = info[0]
-print(f"Descargando el archivo {filename} de tamaño {info[1]} MB.")
+filename, filesize, partes = client.send_recv( ('info', dir) )
+print(f"Descargando el archivo {filename} de tamaño {filesize} MB.")
 
 data = []
-for i in range(info[2]):
+for i in range(partes):
 	data.append( client.send_recv( ('send', (i, dir)) ) )
-	print(f"Progreso: {round(100*(i+1)/info[2], 2)}%")
+	print(f"Progreso: {round(100*(i+1)/partes, 2)}%")
 
 
 if not os.path.exists(filename):
