@@ -36,12 +36,8 @@ class cifrado:
 
 	def decrypt(self, cipherPickle):
 		pickleData = self.__cipher().decrypt( cipherPickle )
-
-		try:
-			datagram = pickle.loads( pickleData )
-			return datagram
-		except:
-			return Datagram( ('-1', '-1') , -1)
+		datagram = pickle.loads( pickleData )
+		return datagram
 
 
 class RUDPServer:

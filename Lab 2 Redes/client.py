@@ -3,11 +3,9 @@ import sys
 import os
 
 
-client = RUDPClient("localhost", 25565, 'ke2y')
+client = RUDPClient("localhost", 25565, 'key')
 
 ROOT = client.send_recv( ('con', '') )
-print(ROOT)
-
 dir = [ROOT]
 archivos = client.send_recv( ('search', dir) )
 
@@ -35,12 +33,13 @@ while True:
 		case 'close':
 			sys.exit(1)
 		
-		case archivos:
-			dir.append(accion)
-			if accion.split('.')[-1] in ['txt', 'bin', 'py']:
-				info = client.send_recv( ('select', dir) )
-				break
-
+		case _:
+			if accion in archivos:
+				dir.append(accion)
+				if accion.split('.')[-1] in ['txt', 'bin', 'py']:
+					info = client.send_recv( ('select', dir) )
+					break
+			
 	archivos = client.send_recv( ('search', dir) )
 
 
@@ -51,16 +50,13 @@ print(f"Descargando el archivo {filename} de tamaño {filesize} MB.")
 
 data = []
 for i in range(partes):
-	data.append( client.send_recv( ('download', i) ) )
+	data.append( client.send_recv( ('send', (i, dir)) ) )
 	print(f"Progreso: {round(100*(i+1)/partes,2)}%")
-
-client.send_recv( ('fin', 1) )
 
 
 if not os.path.exists(filename):
 	with open(filename, "w") as r:
 		r.write( ''.join(data) )
-
 else:
 	i = 1
 	nombre, ext = filename.rsplit('.', 1)
