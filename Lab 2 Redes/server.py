@@ -21,7 +21,7 @@ while True:
 			files = os.listdir(path)
 			server.reply(address, files)
 
-		case 'select':
+		case 'info':
 			filepath = '/'.join( message )
 			if filepath not in archivos:
 				with open(filepath, "r") as f:

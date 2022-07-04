@@ -37,7 +37,7 @@ while True:
 			if accion in archivos:
 				dir.append(accion)
 				if accion.split('.')[-1] in ['txt', 'bin', 'py']:
-					info = client.send_recv( ('select', dir) )
+					info = client.send_recv( ('info', dir) )
 					break
 			
 	archivos = client.send_recv( ('search', dir) )
