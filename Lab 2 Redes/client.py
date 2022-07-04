@@ -40,7 +40,6 @@ while True:
 
 	elif accion in archivos:
 		dir.append(accion)
-		info = client.send_recv( ('info', dir) )
 		break
 
 	elif accion in carpetas:
@@ -49,6 +48,7 @@ while True:
 	carpetas, archivos = client.send_recv( ('search', dir) )
 
 
+info = client.send_recv( ('info', dir) )
 filename = info[0]
 print(f"Descargando el archivo {filename} de tamaño {info[1]} MB.")
 
