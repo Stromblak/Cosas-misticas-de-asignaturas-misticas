@@ -5,14 +5,8 @@ import time
 import hashlib
 from Crypto.Cipher import AES
 
+
 buffersize = 1024
-
-# https://github.com/jorgejarai/redes_udec/tree/main/lab1-2_rtt/python
-# inicios de funciones y atributos
-#  publico
-# _ protegido
-# __ privado
-
 
 class Datagram:
 	def __init__(self, payload, sequence_no):
@@ -89,7 +83,7 @@ class RUDPClient:
 		t = 0.5
 		send = False
 
-		while not send and t <= 16:
+		while not send and t <= 2:
 			ti = time.time()
 			self.s.sendto(cipherPickle, self.address)
 			while True:
@@ -100,7 +94,7 @@ class RUDPClient:
 
 					recvCipherPickle = self.s.recv( buffersize )
 					recvDatagram = self.__aes.decrypt( recvCipherPickle )
-				except BlockingIOError:
+				except:
 					continue
 
 				if recvDatagram._sequence_no == self.sequence_no:
@@ -111,5 +105,5 @@ class RUDPClient:
 			self.sequence_no += 1
 			return recvDatagram._payload
 		else:
-			print("Conexion perdida con el servidor", sys.stderr)
+			print("Fallo en la conexion con el servidor")
 			sys.exit(1)
