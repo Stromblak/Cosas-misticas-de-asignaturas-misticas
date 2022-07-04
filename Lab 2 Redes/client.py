@@ -17,11 +17,10 @@ print()
 # si son muchos archivos aqui es una linea gigante
 while True:
 	carpetas, archivos = client.send_recv( ('search', dir) )
-
-	if len(carpetas):
+	if carpetas:
 		print('Carpetas:')
 		print( '    '.join(carpetas) + '\n')
-	if len(archivos):
+	if archivos:
 		print('Archivos:')
 		print( '    '.join(archivos) )
 
@@ -30,7 +29,7 @@ while True:
 
 	if accion == '..' and dir[-1] != ROOT:
 		dir.pop()
-
+		
 	elif accion == '~':
 		dir = [ROOT]
 
