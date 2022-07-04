@@ -3,33 +3,40 @@ import sys
 import os
 
 
-client = RUDPClient("localhost", 25565, 'key')
+def printBonito(lista):
+	maxlen = max(len(a) for a in lista) + 4
+	capacidad = int(90/maxlen) + 1
+
+	for i in range(0, len(lista), capacidad):
+		print(' ' + ''.join(f'{l:<{maxlen}}' for l in lista[i:i+capacidad]))
+
+key = input('Ingresar clave: ')
+client = RUDPClient("localhost", 25565, key)
 ROOT = client.send_recv( ('root', '') )
 dir = [ROOT]
 
+print('Cliente inicializado')
 print('(carpeta): Moverse a la carpeta')
 print('(archivo): Descargar archivo')
 print('..       : Retroceder')
 print('~        : Volver al inicio')
 print('close    : Salir')
-print()
 
-# si son muchos archivos aqui es una linea gigante
 while True:
+	print('\n')
 	carpetas, archivos = client.send_recv( ('search', dir) )
 	if carpetas:
 		print('Carpetas:')
-		print( '    '.join(carpetas) + '\n')
+		printBonito(carpetas)
+		print()
 	if archivos:
 		print('Archivos:')
-		print( '    '.join(archivos) )
+		printBonito(archivos)
 
-	accion = input()
-	print('\n')
-
+	accion = input(' ')
 	if accion == '..' and dir[-1] != ROOT:
 		dir.pop()
-		
+
 	elif accion == '~':
 		dir = [ROOT]
 
@@ -43,9 +50,8 @@ while True:
 	elif accion in carpetas:
 		dir.append(accion)
 
-
 filename, filesize, partes = client.send_recv( ('info', dir) )
-print(f"Descargando el archivo {filename} de tamaño {filesize} MB.")
+print(f"\nDescargando el archivo {filename} de tamaño {filesize} MB.")
 
 data = []
 for i in range(partes):

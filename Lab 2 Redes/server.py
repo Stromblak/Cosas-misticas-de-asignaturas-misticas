@@ -2,11 +2,12 @@ from rudp import RUDPServer
 import os
 import time
 
-
-server = RUDPServer('localhost', 25565, 'key')
+key = input('Ingresar clave: ')
+server = RUDPServer('localhost', 25565, key)
 archivos = dict()
 ROOT = 'Cosas'
 
+print('Servidor inicializado')
 while True:
 	(tipo, message), address = server.receive()
 	direccion = str(address[0]) + ' ' +  str(address[1])

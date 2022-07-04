@@ -11,7 +11,7 @@ buffersize = 1024
 class Datagram:
 	def __init__(self, payload, sequence_no):
 		self._payload = payload
-		self._sequence_no = sequence_no
+		self._sequence = sequence_no
 
 
 class cifrado:
@@ -52,7 +52,7 @@ class RUDPServer:
 		cipherPickle, address = self.s.recvfrom( buffersize )
 		datagram = self.__aes.decrypt( cipherPickle )
 
-		self.last_seqno = datagram._sequence_no
+		self.last_seqno = datagram._sequence
 	
 		return (datagram._payload, address)
 
@@ -67,7 +67,7 @@ class RUDPClient:
 	def __init__(self, host, port, key):
 		self.__aes = cifrado(key)
 		self.address = (host, port)
-		self.sequence_no = 0
+		self.sequence = 0
 
 		try:
 			self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -77,13 +77,15 @@ class RUDPClient:
 			sys.exit(1)
 
 	def send_recv(self, payload):
-		datagram = Datagram( payload, self.sequence_no )
+		datagram = Datagram( payload, self.sequence )
 		cipherPickle = self.__aes.encrypt( datagram )
 
-		t = 0.5
+		t = 0.25
 		send = False
+		while not send and t <= 16:
+			if t >= 2:
+				print('Sin respuesta')
 
-		while not send and t <= 2:
 			ti = time.time()
 			self.s.sendto(cipherPickle, self.address)
 			while True:
@@ -97,12 +99,12 @@ class RUDPClient:
 				except:
 					continue
 
-				if recvDatagram._sequence_no == self.sequence_no:
+				if recvDatagram._sequence == self.sequence:
 					send = True
 					break
 
 		if send:
-			self.sequence_no += 1
+			self.sequence += 1
 			return recvDatagram._payload
 		else:
 			print("Fallo en la conexion con el servidor")
