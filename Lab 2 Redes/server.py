@@ -8,11 +8,8 @@ archivos = dict()
 ROOT = 'Cosas'
 
 while True:
-	try:
-		(tipo, message), address = server.receive()
-		direccion = str(address[0]) + ' ' +  str(address[1])
-	except:
-		continue
+	(tipo, message), address = server.receive()
+	direccion = str(address[0]) + ' ' +  str(address[1])
 
 	match tipo:
 		case 'con':

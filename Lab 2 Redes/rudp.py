@@ -1,3 +1,4 @@
+from cmath import inf
 import socket
 import pickle
 import sys
@@ -36,8 +37,12 @@ class cifrado:
 
 	def decrypt(self, cipherPickle):
 		pickleData = self.__cipher().decrypt( cipherPickle )
-		datagram = pickle.loads( pickleData )
-		return datagram
+
+		try:
+			datagram = pickle.loads( pickleData )
+			return datagram
+		except:
+			return Datagram( ('error', 1) , 1)
 
 
 class RUDPServer:
