@@ -10,16 +10,24 @@ ROOT = 'Cosas'
 while True:
 	(tipo, message), address = server.receive()
 	direccion = str(address[0]) + ' ' +  str(address[1])
-
+	
 	match tipo:
-		case 'con':
+		case 'root':
 			server.reply(address, ROOT)
 			print(direccion, ' Nueva conexion')
 
 		case 'search':
 			path = '/'.join( message )
-			files = os.listdir(path)
-			server.reply(address, files)
+
+			dir = []
+			file = []
+			for f in os.listdir(path):
+				if os.path.isdir(f):
+					dir.append(f)
+				else:
+					file.append(f)
+
+			server.reply(address, (dir, file))
 
 		case 'info':
 			filepath = '/'.join( message )
