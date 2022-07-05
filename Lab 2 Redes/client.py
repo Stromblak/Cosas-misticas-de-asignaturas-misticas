@@ -10,6 +10,7 @@ def printBonito(lista):
 	for i in range(0, len(lista), capacidad):
 		print(' ' + ''.join(f'{l:<{maxlen}}' for l in lista[i:i+capacidad]))
 
+
 key = input('Ingresar clave: ')
 client = RUDPClient("localhost", 25565, key)
 ROOT = client.send_recv( ('root', '') )

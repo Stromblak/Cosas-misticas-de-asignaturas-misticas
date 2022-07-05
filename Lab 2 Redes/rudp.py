@@ -6,7 +6,8 @@ import hashlib
 from Crypto.Cipher import AES
 
 
-buffersize = 1024
+BUFFERSIZE = 1024
+MAXT = 8
 
 class Datagram:
 	def __init__(self, payload, sequence_no):
@@ -49,7 +50,7 @@ class RUDPServer:
 			sys.exit(1)
 
 	def receive(self):
-		cipherPickle, address = self.s.recvfrom( buffersize )
+		cipherPickle, address = self.s.recvfrom(BUFFERSIZE)
 		datagram = self.__aes.decrypt( cipherPickle )
 
 		self.last_seqno = datagram._sequence
@@ -82,7 +83,7 @@ class RUDPClient:
 
 		t = 0.25
 		send = False
-		while not send and t <= 16:
+		while not send and t <= MAXT:
 			if t >= 2:
 				print('Sin respuesta')
 
@@ -94,7 +95,7 @@ class RUDPClient:
 						t *= 2
 						break
 
-					recvCipherPickle = self.s.recv( buffersize )
+					recvCipherPickle = self.s.recv(BUFFERSIZE)
 					recvDatagram = self.__aes.decrypt( recvCipherPickle )
 				except:
 					continue

@@ -3,7 +3,7 @@ import os
 import time
 
 
-MAXT = 32
+MAXT = 16
 ROOT = 'Cosas'
 
 key = input('Ingresar clave: ')
