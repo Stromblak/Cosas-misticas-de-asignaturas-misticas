@@ -26,13 +26,13 @@ while True:
 			print(direccion, ' Nueva conexion')
 
 		case 'search':
-			path = '/'.join( message )
+			path = '\\'.join( message )
 			carpetas = [ f for f in listdir(path) if isdir(f) ]
 			noCarpetas = [ f for f in listdir(path) if not isdir(f) ]
 			server.reply(address, (carpetas, noCarpetas))
 
 		case 'info':
-			filepath = '/'.join( message )
+			filepath = '\\'.join( message )
 			if filepath not in archivos:
 				with open(filepath, "r") as f:
 					contenido = f.read()
@@ -49,7 +49,7 @@ while True:
 
 		case 'send':
 			parte = message[0]
-			filepath = '/'.join( message[1] )
+			filepath = '\\'.join( message[1] )
 
 			data = archivos[filepath][0]
 			archivos[filepath][1] = time.time()
