@@ -11,8 +11,9 @@ while True:
 	if isdir(r):
 		ROOT = r
 		break
+
 server = RUDPServer('localhost', 25565, input('Ingresar clave: '))
-archivos, CotaPorcentaje = dict(), dict()
+archivos = dict()
 
 print('Servidor inicializado')
 while True:
@@ -43,7 +44,6 @@ while True:
 			filename = message[-1]
 			partes = len(data)
 
-			CotaPorcentaje[address] = [1, time.time()]
 			server.reply( address, (filename, filesize, partes) )
 			print(f"{direccion}  Listo para enviar el archivo {filename} de tamaño {filesize} MB")
 
@@ -53,20 +53,10 @@ while True:
 
 			data = archivos[filepath][0]
 			archivos[filepath][1] = time.time()
-			CotaPorcentaje[address][1] = time.time()
 
 			server.reply(address, data[parte])
-
-			p = round(100*(parte+1)/len(data), 2)
-			if p >= CotaPorcentaje[address][0]:
-				print(f"{direccion}  Enviando: {p}%")
-				CotaPorcentaje[address][0] += 1
 
 				
 	for k in list(archivos.keys()):
 		if time.time() - archivos[k][1] > MAXT:
 			del archivos[k]
-
-	for k in list(CotaPorcentaje.keys()):
-		if time.time() - CotaPorcentaje[k][1] > MAXT:
-			del CotaPorcentaje[k]
