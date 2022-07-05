@@ -7,7 +7,8 @@ from Crypto.Cipher import AES
 
 
 BUFFERSIZE = 1024
-MAXT = 8
+MINREENVIO = 0.5
+MAXREENVIO = 8
 
 class Datagram:
 	def __init__(self, payload, sequence_no):
@@ -81,9 +82,9 @@ class RUDPClient:
 		datagram = Datagram( payload, self.sequence )
 		cipherPickle = self.__aes.encrypt( datagram )
 
-		t = 0.25
+		t = MINREENVIO
 		send = False
-		while not send and t <= MAXT:
+		while not send and t <= MAXREENVIO:
 			if t >= 2:
 				print('Sin respuesta')
 
