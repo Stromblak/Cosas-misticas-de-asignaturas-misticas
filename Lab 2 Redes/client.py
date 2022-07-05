@@ -54,9 +54,13 @@ filename, filesize, partes = client.send_recv( ('info', dir) )
 print(f"\nDescargando el archivo {filename} de tamaño {filesize} MB.")
 
 data = []
+porcentaje = 1
 for i in range(partes):
 	data.append( client.send_recv( ('send', (i, dir)) ) )
-	print(f"Progreso: {round(100*(i+1)/partes, 2)}%")
+
+	if round(100*(i+1)/partes, 2) >= porcentaje:
+		print(f"Progreso: {round(100*(i+1)/partes, 2)}%")
+		porcentaje += 1
 
 
 if not os.path.exists(filename):

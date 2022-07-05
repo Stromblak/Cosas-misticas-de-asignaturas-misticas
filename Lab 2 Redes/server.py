@@ -2,9 +2,20 @@ from rudp import RUDPServer
 import os
 import time
 
+
+def eliminarTemp(lista):
+	eliminar = []
+	for a in lista:
+		if time.time() - lista[a][1] > 2:
+			eliminar.append(a)
+	for e in eliminar:
+		del lista[e]
+
+
 key = input('Ingresar clave: ')
 server = RUDPServer('localhost', 25565, key)
 archivos = dict()
+porcentaje = dict()
 ROOT = 'Cosas'
 
 print('Servidor inicializado')
@@ -46,6 +57,7 @@ while True:
 			filename = message[-1]
 			partes = len(data)
 
+			porcentaje[address] = [1, time.time()]
 			server.reply( address, (filename, filesize, partes) )
 			print(f"{direccion}  Listo para enviar el archivo {filename} de tamaño {filesize} MB")
 
@@ -55,16 +67,14 @@ while True:
 
 			data = archivos[filepath][0]
 			archivos[filepath][1] = time.time()
-			porcentaje = round(100*(parte+1)/len(data), 2)
+			porcentaje[address][1] = time.time()
 
 			server.reply(address, data[parte])
-			print(f"{direccion}  Enviando: {porcentaje}%")
 
+			p = round(100*(parte+1)/len(data), 2)
+			if p >= porcentaje[address][0]:
+				print(f"{direccion}  Enviando: {p}%")
+				porcentaje[address][0] += 1
 
-	eliminar = []
-	for a in archivos:
-		if time.time() - archivos[a][1] > 32:
-			eliminar.append(a)
-
-	for e in eliminar:
-		del archivos[e]
+	eliminarTemp(archivos)
+	eliminarTemp(porcentaje)
