@@ -3,20 +3,13 @@ import os
 import time
 
 
-def eliminarTemp(lista):
-	eliminar = []
-	for a in lista:
-		if time.time() - lista[a][1] > 2:
-			eliminar.append(a)
-	for e in eliminar:
-		del lista[e]
-
+MAXT = 32
+ROOT = 'Cosas'
 
 key = input('Ingresar clave: ')
 server = RUDPServer('localhost', 25565, key)
 archivos = dict()
 porcentaje = dict()
-ROOT = 'Cosas'
 
 print('Servidor inicializado')
 while True:
@@ -30,16 +23,9 @@ while True:
 
 		case 'search':
 			path = '/'.join( message )
-
-			dir = []
-			file = []
-			for f in os.listdir(path):
-				if os.path.isdir(f):
-					dir.append(f)
-				else:
-					file.append(f)
-
-			server.reply(address, (dir, file))
+			carpetas = [ f for f in os.listdir(path) if os.path.isdir(f) ]
+			noCarpetas = [ f for f in os.listdir(path) if not os.path.isdir(f) ]
+			server.reply(address, (carpetas, noCarpetas))
 
 		case 'info':
 			filepath = '/'.join( message )
@@ -47,10 +33,7 @@ while True:
 				with open(filepath, "r") as f:
 					contenido = f.read()
 
-				data = []
-				for i in range(0, len(contenido), 398):
-					data.append( contenido[i:i+398] )
-
+				data = [ contenido[i:i+398] for i in range(0, len(contenido), 398) ]
 				archivos[filepath] = [data, time.time()]
 
 			filesize = round(os.path.getsize(filepath) / (1000 ** 2), 3)
@@ -76,5 +59,11 @@ while True:
 				print(f"{direccion}  Enviando: {p}%")
 				porcentaje[address][0] += 1
 
-	eliminarTemp(archivos)
-	eliminarTemp(porcentaje)
+				
+	for k in list(archivos.keys()):
+		if time.time() - archivos[k][1] > MAXT:
+			del archivos[k]
+
+	for k in list(porcentaje.keys()):
+		if time.time() - porcentaje[k][1] > MAXT:
+			del porcentaje[k]
