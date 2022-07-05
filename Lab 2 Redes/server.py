@@ -18,12 +18,11 @@ archivos = dict()
 print('Servidor inicializado')
 while True:
 	(tipo, message), address = server.receive()
-	direccion = str(address[0]) + ' ' +  str(address[1])
 	
 	match tipo:
 		case 'root':
 			server.reply(address, ROOT)
-			print(direccion, ' Nueva conexion')
+			print('Nueva conexion:', address)
 
 		case 'search':
 			path = '\\'.join( message )
@@ -45,7 +44,7 @@ while True:
 			partes = len(data)
 
 			server.reply( address, (filename, filesize, partes) )
-			print(f"{direccion}  Listo para enviar el archivo {filename} de tamaño {filesize} MB")
+			print(f"Listo para enviar el archivo {filename} de tamaño {filesize} MB")
 
 		case 'send':
 			parte = message[0]
