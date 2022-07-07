@@ -1,6 +1,6 @@
-## Instrucciones
+# Instrucciones
 
-### Server
+## Server
 - Para ejecutar el server, hacer:
 
 	- `$ python server.py`
@@ -13,7 +13,7 @@
 
 - Finalmente, se creará e inicializara el servidor.
 
-### Client
+## Client
 - Para ejecutar el client, hacer:
 
 	- `$ python client.py`
@@ -28,7 +28,7 @@ Si la clave ingresada es la correcta, podrá ver algunas opciones y los archivos
 
 - Después de descargar el archivo, se terminará el programa.
 
-### Cosas a tener en cuenta para que funcione bien el programa:
+## Cosas a tener en cuenta para que funcione bien el programa:
 - Debe haber solo un servidor ejecutado, esperando conexiones.
 - Luego se podrá ejecutar un cliente. No se puede ejecutar otro servidor o ejecutar un cliente sin servidor.
 - El archivo a enviar, puede ser binario o .txt. Si es .txt debe estar en UTF-8.
