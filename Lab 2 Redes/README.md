@@ -5,7 +5,7 @@
 
 	- `$ python server.py`
 
-- Luego, debe escribir el nombre de la carpeta con el archivo.
+- Luego, debe escribir el nombre de la carpeta con los archivos que se compartirán.
 
 	- Por ejemplo: `Cosas`
 
