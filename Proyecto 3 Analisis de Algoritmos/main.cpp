@@ -36,6 +36,7 @@ int main(){
 
 	vector<int> sol = AproxVertexCover(adj);
 
+	cout << "Solucion: ";
 	for(int v: sol) cout << v << ' ';
 	cout << endl;
 
