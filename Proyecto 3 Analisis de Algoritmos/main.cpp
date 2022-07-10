@@ -22,13 +22,13 @@ vector<int> AproxVertexCover(vvi adj){
 
 
 int main(){
-	int edges, vertices;
-	cout << "Insertar numero aristas y numero vertices. Ej: 3 4" << endl;
-	cin >> edges >> vertices;
+	int nodos, lineas;
+	cout << "Insertar numero nodos y numero lineas. Ej: 3 4" << endl;
+	cin >> nodos >> lineas;
 	cout << "Insertar vertices. Ej: 1 2" << endl;
 
-	vvi adj(edges+1);
-	for(int i=0; i<vertices; i++){
+	vvi adj(nodos+1);
+	for(int i=0; i<lineas; i++){
 		int a, b;
 		cin >> a >> b;
 		adj[a].push_back(b);
